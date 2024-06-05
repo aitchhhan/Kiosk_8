@@ -83,10 +83,16 @@ class Manager(models.Model):
         pass
 
 class Item(models.Model):
+    CATEGORY = [
+        ('coffee', 'Coffee'),
+        ('tea_aid', 'Tea & Aid'),
+        ('decaffein', 'Decaffein'),
+        ('dessert', 'Dessert'),
+    ]
     item_name = models.CharField(max_length=255)
     item_price = models.IntegerField()
     item_image = models.ImageField(upload_to='images/')
-    
+    category = models.CharField(max_length=10, choices=CATEGORY, default='coffee')
 
 class Order(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE)

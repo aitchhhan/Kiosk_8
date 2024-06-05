@@ -110,6 +110,7 @@ def add_item(request):
             item_name = request.POST['item_name']
             item_price = request.POST['item_price']
             item_image = request.FILES.get('item_image') if 'item_image' in request.FILES else None
+            category = request.POST['category']
 
             # 데이터 유효성 검사 및 저장
             if item_name and item_price and item_image:
@@ -117,6 +118,7 @@ def add_item(request):
                     item_name = item_name,
                     item_price = item_price,
                     item_image = item_image,
+                    category = category,
                 )
                 item.save()
                 return redirect('coffee')
@@ -130,7 +132,7 @@ def add_item(request):
     return render(request, 'add_item.html', {'error_message': error_message})
 
 def coffee(request):
-    items = Item.objects.all()
+    items = Item.objects.filter(category='coffee')
     
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -178,3 +180,153 @@ def coffee(request):
                 return render(request, 'coffee.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
     return render(request, 'coffee.html', {'items': items})
+
+def decaffein(request):
+    items = Item.objects.filter(category='decaffein')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        # 저장 눌렀을 때
+        if action == 'save':
+            updated_data = {'item_name': request.POST.get('item_name'),
+                            'item_price': request.POST.get('item_price'),}
+            
+            ori_name = request.POST.get('ori_name')
+            new_name = request.POST.get('event_name')
+            
+            # 스탬프 모델에 데이터 저장/이미지 입력
+            images = request.FILES.get('item_image')
+            try:
+                if images:
+                    fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT))
+                    filename = fs.save(images.name, images)
+                    updated_data['image'] = filename
+                    
+                # DB에 직접 업뎃
+                Item.objects.filter(event_name=ori_name).update(**updated_data)
+                
+                new_item_instance = Item.objects.get(item_name=new_name)  # 새로운 event_name에 해당하는 stamp 인스턴스
+
+                # 2. 연결된 stamp_collection 레코드 찾기 및 외래 키 값 업데이트
+                # related_stamp_collections = stamp_collection.objects.filter(stamp__event_name=ori_name)
+                # related_stamp_collections.update(stamp=new_stamp_instance)
+                
+                return redirect('decaffein')  # 수정 후 도장 목록으로 리디렉션
+
+            except Item.DoesNotExist:
+                    return render(request, 'decaffein.html', {'error_message': '필드를 확인해주세요.'})
+
+        # 삭제 눌렀을 때
+        if action == 'delete':
+            ori_stamp = request.POST.get('ori_name')  # 삭제할 스탬프의 ID를 받아옴
+            
+            try:
+                delstamp = Item.objects.get(event_name=ori_stamp)  # 해당 ID의 스탬프 객체를 가져옴
+                delstamp.delete()  # 스탬프 삭제
+                
+                return redirect('decaffein')  # 삭제 후 리다이렉트
+            except Item.DoesNotExist:
+                return render(request, 'decaffein.html', {'error_message': '이벤트가 존재하지 않습니다.'})
+    
+    return render(request, 'decaffein.html', {'items': items})
+
+def dessert(request):
+    items = Item.objects.filter(category='dessert')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        # 저장 눌렀을 때
+        if action == 'save':
+            updated_data = {'item_name': request.POST.get('item_name'),
+                            'item_price': request.POST.get('item_price'),}
+            
+            ori_name = request.POST.get('ori_name')
+            new_name = request.POST.get('event_name')
+            
+            # 스탬프 모델에 데이터 저장/이미지 입력
+            images = request.FILES.get('item_image')
+            try:
+                if images:
+                    fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT))
+                    filename = fs.save(images.name, images)
+                    updated_data['image'] = filename
+                    
+                # DB에 직접 업뎃
+                Item.objects.filter(event_name=ori_name).update(**updated_data)
+                
+                new_item_instance = Item.objects.get(item_name=new_name)  # 새로운 event_name에 해당하는 stamp 인스턴스
+
+                # 2. 연결된 stamp_collection 레코드 찾기 및 외래 키 값 업데이트
+                # related_stamp_collections = stamp_collection.objects.filter(stamp__event_name=ori_name)
+                # related_stamp_collections.update(stamp=new_stamp_instance)
+                
+                return redirect('dessert')  # 수정 후 도장 목록으로 리디렉션
+
+            except Item.DoesNotExist:
+                    return render(request, 'dessert.html', {'error_message': '필드를 확인해주세요.'})
+
+        # 삭제 눌렀을 때
+        if action == 'delete':
+            ori_stamp = request.POST.get('ori_name')  # 삭제할 스탬프의 ID를 받아옴
+            
+            try:
+                delstamp = Item.objects.get(event_name=ori_stamp)  # 해당 ID의 스탬프 객체를 가져옴
+                delstamp.delete()  # 스탬프 삭제
+                
+                return redirect('dessert')  # 삭제 후 리다이렉트
+            except Item.DoesNotExist:
+                return render(request, 'dessert.html', {'error_message': '이벤트가 존재하지 않습니다.'})
+    
+    return render(request, 'dessert.html', {'items': items})
+
+def tea_aid(request):
+    items = Item.objects.filter(category='tea_aid')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        # 저장 눌렀을 때
+        if action == 'save':
+            updated_data = {'item_name': request.POST.get('item_name'),
+                            'item_price': request.POST.get('item_price'),}
+            
+            ori_name = request.POST.get('ori_name')
+            new_name = request.POST.get('event_name')
+            
+            # 스탬프 모델에 데이터 저장/이미지 입력
+            images = request.FILES.get('item_image')
+            try:
+                if images:
+                    fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT))
+                    filename = fs.save(images.name, images)
+                    updated_data['image'] = filename
+                    
+                # DB에 직접 업뎃
+                Item.objects.filter(event_name=ori_name).update(**updated_data)
+                
+                new_item_instance = Item.objects.get(item_name=new_name)  # 새로운 event_name에 해당하는 stamp 인스턴스
+
+                # 2. 연결된 stamp_collection 레코드 찾기 및 외래 키 값 업데이트
+                # related_stamp_collections = stamp_collection.objects.filter(stamp__event_name=ori_name)
+                # related_stamp_collections.update(stamp=new_stamp_instance)
+                
+                return redirect('tea_aid')  # 수정 후 도장 목록으로 리디렉션
+
+            except Item.DoesNotExist:
+                    return render(request, 'tea_aid.html', {'error_message': '필드를 확인해주세요.'})
+
+        # 삭제 눌렀을 때
+        if action == 'delete':
+            ori_stamp = request.POST.get('ori_name')  # 삭제할 스탬프의 ID를 받아옴
+            
+            try:
+                delstamp = Item.objects.get(event_name=ori_stamp)  # 해당 ID의 스탬프 객체를 가져옴
+                delstamp.delete()  # 스탬프 삭제
+                
+                return redirect('tea_aid')  # 삭제 후 리다이렉트
+            except Item.DoesNotExist:
+                return render(request, 'tea_aid.html', {'error_message': '이벤트가 존재하지 않습니다.'})
+    
+    return render(request, 'tea_aid.html', {'items': items})

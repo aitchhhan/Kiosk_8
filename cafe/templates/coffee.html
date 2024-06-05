@@ -29,44 +29,12 @@
                 <div class="item">
                     {% for item in items %}
                         <button class="stampBtn" data-name="{{ item.item_name }}" data-price="{{ item.item_price }}">
-                            <li>{{ item.item_name }}</li>
-                            <li>{{ item.item_price }}</li>
                             <img src="{{ item.item_image.url }}" alt="수집 이미지" width="100" height="100">
+                            <li>{{ item.item_name }}</li>
+                            <li>{{ item.item_price }}원</li>
                         </button>
                     {% endfor %}
                 </div>
-                <!-- <li class="menu-item">
-                    <img src="images/espresso.jpg" alt="Espresso">
-                    <div class="item-info">
-                        <h3>아메리카노</h3>
-                        <p>A shot of rich, concentrated coffee.</p>
-                        <span class="price">1,500원</span>
-                    </div>
-                </li>
-                <li class="menu-item">
-                    <img src="images/americano.jpg" alt="Americano">
-                    <div class="item-info">
-                        <h3>Americano</h3>
-                        <p>Espresso diluted with hot water.</p>
-                        <span class="price">$3.00</span>
-                    </div>
-                </li>
-                <li class="menu-item">
-                    <img src="images/latte.jpg" alt="Latte">
-                    <div class="item-info">
-                        <h3>Latte</h3>
-                        <p>Espresso with steamed milk and foam.</p>
-                        <span class="price">$3.50</span>
-                    </div>
-                </li>
-                <li class="menu-item">
-                    <img src="images/cappuccino.jpg" alt="Cappuccino">
-                    <div class="item-info">
-                        <h3>Cappuccino</h3>
-                        <p>Espresso with steamed milk and a layer of foam.</p>
-                        <span class="price">$4.00</span>
-                    </div>
-                </li> -->
             </ul>
         </section>
 
