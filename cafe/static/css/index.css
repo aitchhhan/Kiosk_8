@@ -1,0 +1,76 @@
+body {
+  font-family: sans-serif;
+}
+
+.container {
+  width: 50%;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+header {
+  padding: 20px;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+h1 {
+  margin: 0;
+}
+
+main {
+  padding: 20px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+#eatInBtn {
+  padding: 10px 20px;
+  font-size: 100px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 400px;
+  height: 400px;
+}
+
+#takeOutBtn {
+  padding: 10px 20px;
+  font-size: 100px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 400px;
+  height: 400px;
+}
+
+#adminLoginBtn {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  padding: 2px 5px;  /* 버튼 크기 줄임 */
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;  /* 버튼 글자 크기 줄임 */
+  display: inline-block;
+  width: 80px; /* 버튼 너비 설정 */
+  height: 30px; /* 버튼 높이 설정 */
+}
+
+#adminLoginBtn a {
+  color: white;
+  text-decoration: none;
+  font-size: 12px;  /* 링크 글자 크기 줄임 */
+  display: inline-block;
+  width: 50%;
+  height: 50%;
+  text-align: center;
+  line-height: 30px; /* 버튼 높이에 맞게 설정 */
+}

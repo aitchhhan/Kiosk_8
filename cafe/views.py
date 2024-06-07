@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
+from functools import wraps
 from .models import *
+from django.contrib import messages
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 import os
@@ -8,99 +10,65 @@ def index(request):
     # 메인 페이지 출력
     return render(request, 'index.html')
 
-# def main(request):
-#     # 메인 페이지 출력
-#     return render(request, 'main.html')
-  
-def coffee(request):
+
+# Manager_Pages #################################################################################################################
+
+def manager_login_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if 'manager_id' not in request.session:
+            messages.error(request, 'You must be logged in to access this page.')
+            return redirect('manager_login')  # 로그인 페이지로 리디렉션
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+@manager_login_required
+def manager(request):
     # 메인 페이지 출력
-    return render(request, 'coffee.html')
+    return render(request, 'manager_pages/manager.html')
 
-def decaffein(request):
+@manager_login_required
+def menu_manage(request):
     # 메인 페이지 출력
-    return render(request, 'decaffein.html')
+    return render(request, 'manager_pages/menu_manage.html')
 
-def dessert(request):
-    # 메인 페이지 출력
-    return render(request, 'dessert.html')
+def manager_login(request):
+    if request.method == 'POST':
+        admin_id = request.POST.get('admin_id')
+        password = request.POST.get('password')
+        
+        try:
+            manager = Manager.objects.get(admin_id=admin_id)
+            if manager.password == password:
+                request.session['manager_id'] = manager.id
+                messages.success(request, 'Successfully logged in')
+                return redirect('manager')  # Replace 'dashboard' with your dashboard view name
+            else:
+                messages.error(request, 'Invalid password')
+        except Manager.DoesNotExist:
+            messages.error(request, 'Admin ID does not exist')
+    
+    return render(request, 'manager_pages/manager_login.html')
 
-def tea_aid(request):
-    # 메인 페이지 출력
-    return render(request, 'tea_aid.html')
+def manager_logout(request):
+    if 'manager_id' in request.session:
+        del request.session['manager_id']
+        messages.success(request, 'Successfully logged out')
+    return redirect('index')
 
-# def menu(request):
-#     # 메뉴 목록 출력
-#     items = Item.objects.all()
-#     return render(request, 'menu.html', {'items': items})
+def dashboard(request):
+    if 'manager_id' not in request.session:
+        return redirect('manager_login')
+    
+    # Fetch sales, menu, orders etc.
+    context = {
+        # 'sales': sales_data,
+        # 'menu': menu_data,
+        # 'orders': orders_data,
+    }
+    return render(request, 'dashboard.html', context)
 
-# def order(request):
-#     # 주문 처리
-#     if request.method == 'POST':
-#         order_number = request.POST['order_number']
-#         total_price = request.POST['total_price']
-
-#         member = Member.objects.get(user=request.user)
-#         order = Order.objects.create(member=member, order_number=order_number, total_price=total_price)
-
-#         for item_id, quantity in request.POST.items():
-#             if item_id.startswith('item_'):
-#                 item_id = int(item_id.split('_')[1])
-#                 item = Item.objects.get(id=item_id)
-#                 OrderItem.objects.create(order=order, item=item, quantity=quantity)
-
-#         return redirect('order_complete')
-#     else:
-#         items = Item.objects.all()
-#         return render(request, 'order.html', {'items': items})
-
-# def order_complete(request):
-#     # 주문 완료 페이지 출력
-#     return render(request, 'order_complete.html')
-
-
-
-# def manager_login(request):
-#     # 관리자 로그인 처리
-#     if request.method == 'POST':
-#         admin_id = request.POST['admin_id']
-#         password = request.POST['password']
-
-#         try:
-#             manager = Manager.objects.get(admin_id=admin_id)
-#         except Manager.DoesNotExist:
-#             return render(request, 'manager_login.html', {'error_message': '존재하지 않는 관리자입니다.'})
-
-#         if manager.password != password:
-#             return render(request, 'manager_login.html', {'error_message': '비밀번호가 틀렸습니다.'})
-
-#         request.session['manager_id'] = manager.id
-#         return redirect('manager_main')
-#     else:
-#         return render(request, 'manager_login.html')
-
-# def manager_logout(request):
-#     # 관리자 로그아웃 처리
-#     del request.session['manager_id']
-#     return redirect('manager_login')
-
-# def manager_main(request):
-#     # 관리자 메인 페이지 출력
-#     return render(request, 'manager_main.html')
-
-# def manage_menu(request):
-#     # 메뉴 관리 페이지 출력
-#     if request.method == 'POST':
-#         name = request.POST['name']
-#         price = request.POST['price']
-#         image = request.FILES['image']
-#         cup_type = request.POST['cup_type']
-#         temperature = request.POST['temperature']
-#         size = request.POST['size']
-
-#         Item.objects.create(name=name, price=price, image=image, cup_type=cup_type, temperature=temperature, size=size)
-#         return redirect('manage_menu')
-
-
+@manager_login_required
 def add_item(request):
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -128,8 +96,13 @@ def add_item(request):
         
     else:
         error_message = ""
+    return render(request, 'manager_pages/add_item.html', {'error_message': error_message})
 
-    return render(request, 'add_item.html', {'error_message': error_message})
+# User_Pages #################################################################################################################
+# 쿠키 4.3 7.6 코드
+# npm개념
+# 시뮬라이즈
+# cpu 계산
 
 def coffee(request):
     items = Item.objects.filter(category='coffee')
@@ -165,7 +138,7 @@ def coffee(request):
                 return redirect('coffee')  # 수정 후 도장 목록으로 리디렉션
 
             except Item.DoesNotExist:
-                    return render(request, 'coffee.html', {'error_message': '필드를 확인해주세요.'})
+                    return render(request, 'user_pages/coffee.html', {'error_message': '필드를 확인해주세요.'})
 
         # 삭제 눌렀을 때
         if action == 'delete':
@@ -177,9 +150,9 @@ def coffee(request):
                 
                 return redirect('coffee')  # 삭제 후 리다이렉트
             except Item.DoesNotExist:
-                return render(request, 'coffee.html', {'error_message': '이벤트가 존재하지 않습니다.'})
+                return render(request, 'user_pages/coffee.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
-    return render(request, 'coffee.html', {'items': items})
+    return render(request, 'coffee', {'items': items})
 
 def decaffein(request):
     items = Item.objects.filter(category='decaffein')
@@ -215,7 +188,7 @@ def decaffein(request):
                 return redirect('decaffein')  # 수정 후 도장 목록으로 리디렉션
 
             except Item.DoesNotExist:
-                    return render(request, 'decaffein.html', {'error_message': '필드를 확인해주세요.'})
+                    return render(request, 'user_pages/decaffein.html', {'error_message': '필드를 확인해주세요.'})
 
         # 삭제 눌렀을 때
         if action == 'delete':
@@ -227,9 +200,9 @@ def decaffein(request):
                 
                 return redirect('decaffein')  # 삭제 후 리다이렉트
             except Item.DoesNotExist:
-                return render(request, 'decaffein.html', {'error_message': '이벤트가 존재하지 않습니다.'})
+                return render(request, 'user_pages/decaffein.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
-    return render(request, 'decaffein.html', {'items': items})
+    return render(request, 'user_pages/decaffein.html', {'items': items})
 
 def dessert(request):
     items = Item.objects.filter(category='dessert')
@@ -265,7 +238,7 @@ def dessert(request):
                 return redirect('dessert')  # 수정 후 도장 목록으로 리디렉션
 
             except Item.DoesNotExist:
-                    return render(request, 'dessert.html', {'error_message': '필드를 확인해주세요.'})
+                    return render(request, 'user_pages/dessert.html', {'error_message': '필드를 확인해주세요.'})
 
         # 삭제 눌렀을 때
         if action == 'delete':
@@ -277,12 +250,12 @@ def dessert(request):
                 
                 return redirect('dessert')  # 삭제 후 리다이렉트
             except Item.DoesNotExist:
-                return render(request, 'dessert.html', {'error_message': '이벤트가 존재하지 않습니다.'})
+                return render(request, 'user_pages/dessert.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
-    return render(request, 'dessert.html', {'items': items})
+    return render(request, 'user_pages/dessert.html', {'items': items})
 
-def tea_aid(request):
-    items = Item.objects.filter(category='tea_aid')
+def tea_ade(request):
+    items = Item.objects.filter(category='tea_ade')
     
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -312,10 +285,10 @@ def tea_aid(request):
                 # related_stamp_collections = stamp_collection.objects.filter(stamp__event_name=ori_name)
                 # related_stamp_collections.update(stamp=new_stamp_instance)
                 
-                return redirect('tea_aid')  # 수정 후 도장 목록으로 리디렉션
+                return redirect('tea_ade')  # 수정 후 도장 목록으로 리디렉션
 
             except Item.DoesNotExist:
-                    return render(request, 'tea_aid.html', {'error_message': '필드를 확인해주세요.'})
+                    return render(request, 'user_pages/tea_ade.html', {'error_message': '필드를 확인해주세요.'})
 
         # 삭제 눌렀을 때
         if action == 'delete':
@@ -325,8 +298,8 @@ def tea_aid(request):
                 delstamp = Item.objects.get(event_name=ori_stamp)  # 해당 ID의 스탬프 객체를 가져옴
                 delstamp.delete()  # 스탬프 삭제
                 
-                return redirect('tea_aid')  # 삭제 후 리다이렉트
+                return redirect('tea_ade')  # 삭제 후 리다이렉트
             except Item.DoesNotExist:
-                return render(request, 'tea_aid.html', {'error_message': '이벤트가 존재하지 않습니다.'})
+                return render(request, 'user_pages/tea_ade.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
-    return render(request, 'tea_aid.html', {'items': items})
+    return render(request, 'user_pages/tea_ade.html', {'items': items})

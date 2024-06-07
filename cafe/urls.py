@@ -4,12 +4,20 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    # path('', main, name='main'),
+    path('', index, name='index'),
+    # manager_pages
+    path('manager/', manager, name='manager'),
+    path('menu_manage/', menu_manage, name='menu_manage'),
+    path('manager_login/', manager_login, name='manager_login'),
+    path('manager_logout/', manager_logout, name='manager_logout'),
     path('add_item/', add_item, name='add_item'),
-    path('', coffee, name='coffee'),
+    
+    
+    # user_pages
+    path('coffee/', coffee, name='coffee'),
     path('decaffein/', decaffein, name='decaffein'),
     path('dessert/', dessert, name='dessert'),
-    path('tea_aid/', tea_aid, name='tea_aid'),
+    path('tea_ade/', tea_ade, name='tea_ade'),
 ]
 
 if settings.DEBUG:

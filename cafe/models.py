@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password, check_password
 
 # class Member(models.Model):
 #     phone_number = models.CharField(max_length=15)
@@ -70,6 +71,12 @@ class Manager(models.Model):
     admin_id = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
 
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+    
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
+
     def manage_menu(self):
         # 메뉴 관리 기능 구현
         pass
@@ -85,7 +92,7 @@ class Manager(models.Model):
 class Item(models.Model):
     CATEGORY = [
         ('coffee', 'Coffee'),
-        ('tea_aid', 'Tea & Aid'),
+        ('tea_ade', 'Tea / Ade'),
         ('decaffein', 'Decaffein'),
         ('dessert', 'Dessert'),
     ]

@@ -5,26 +5,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coffee Shop Menu</title>
-    <link rel="stylesheet" href={% static "css/dessert.css"%}>
+    <link rel="stylesheet" href={% static "css/coffee.css"%}>
 </head>
 <body>
     <header>
-        <h1>CAFE KIOSK</h1>
+        <h1>
+            <a href={% url 'index' %}>CAFE KIOSK</a>
+        </h1>   
     </header>
-
     <main>
         <section class="menu-categories">
             <h2>Categories</h2>
             <ul>
-                <li><a href={% url 'coffee' %}>커피</a></li>
+                <li>커피</li>
                 <li><a href={% url 'decaffein' %}>디카페인</a></li>
-                <li><a href={% url 'tea_aid' %}>티/에이드</a></li>
-                <li>디저트</li>
+                <li><a href={% url 'tea_ade' %}>티/에이드</a></li>
+                <li><a href={% url 'dessert' %}>디저트</a></li>
             </ul>
         </section>
 
         <section class="menu-items">
-            <h2>Dessert</h2>
+            <h2>Coffee</h2>
             <ul>
                 <div class="item">
                     {% for item in items %}

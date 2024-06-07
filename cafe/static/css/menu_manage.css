@@ -1,0 +1,52 @@
+body {
+  font-family: sans-serif;
+}
+
+.container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+header {
+  padding: 20px;
+  background-color: #f0f0f0;
+}
+
+h1 {
+  margin: 0;
+}
+
+main {
+  padding: 20px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 50px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#addMenuBtn {
+  width: 400px; /* 버튼 너비 조절 */
+  height: 800px; /* 버튼 높이 조절 */
+}
+
+#upMenuBtn {
+  width: 400px; /* 버튼 너비 조절 */
+  height: 800px; /* 버튼 높이 조절 */
+}
+
+#deMenuBtn {
+  width: 400px; /* 버튼 너비 조절 */
+  height: 800px; /* 버튼 높이 조절 */
+}
