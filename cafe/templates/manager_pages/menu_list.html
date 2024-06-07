@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Shop Menu</title>
+    <link rel="stylesheet" href="{% static 'css/menu.css' %}">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuButtons = document.querySelectorAll('.menu-categories li a');
+            const menuItems = document.querySelectorAll('.menu-items .category');
+            const itemButtons = document.querySelectorAll('.stampBtn');
+
+            menuButtons.forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    
+                    // Remove 'active' class from all buttons
+                    menuButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add 'active' class to clicked button
+                    button.classList.add('active');
+                    
+                    const category = button.getAttribute('href').replace('#', '');
+                    menuItems.forEach(item => {
+                        if (item.classList.contains(category)) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // 기본으로 coffee 항목 보이기
+            menuItems.forEach(item => {
+                if (item.classList.contains('coffee')) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // 기본으로 coffee 버튼에 active 클래스 추가
+            document.querySelector('.menu-categories li a[href="#coffee"]').classList.add('active');
+
+            // Item buttons click event
+            itemButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const itemId = button.getAttribute('data-id');
+                    window.location.href = `{% url 'edit_item' 0 %}`.replace('0', itemId);
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <h1>
+            <a href='{% url 'index' %}'>CAFE KIOSK</a>
+        </h1>   
+    </header>
+    <main>
+        <section class="menu-categories">
+            <h2>Categories</h2>
+            <ul>   
+                <li><a href="#coffee" class="active">커피</a></li>
+                <li><a href="#decaffein">디카페인</a></li>
+                <li><a href="#tea_ade">티/에이드</a></li>
+                <li><a href="#dessert">디저트</a></li>
+            </ul>
+        </section>
+
+        <section class="menu-items">
+            <h2>Menu Items</h2>
+            <div class="category coffee">
+                {% for item in items %}
+                    {% if item.category == 'coffee' %}
+                        <button class="stampBtn" data-id="{{ item.id }}" data-name="{{ item.item_name }}" data-price="{{ item.item_price }}">
+                            <img src="{{ item.item_image.url }}" alt="수집 이미지" width="100" height="100">
+                            <div>{{ item.item_name }}</div>
+                            <div>{{ item.item_price }}원</div>
+                        </button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="category decaffein" style="display:none;">
+                {% for item in items %}
+                    {% if item.category == 'decaffein' %}
+                        <button class="stampBtn" data-id="{{ item.id }}" data-name="{{ item.item_name }}" data-price="{{ item.item_price }}">
+                            <img src="{{ item.item_image.url }}" alt="수집 이미지" width="100" height="100">
+                            <div>{{ item.item_name }}</div>
+                            <div>{{ item.item_price }}원</div>
+                        </button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="category tea_ade" style="display:none;">
+                {% for item in items %}
+                    {% if item.category == 'tea_ade' %}
+                        <button class="stampBtn" data-id="{{ item.id }}" data-name="{{ item.item_name }}" data-price="{{ item.item_price }}">
+                            <img src="{{ item.item_image.url }}" alt="수집 이미지" width="100" height="100">
+                            <div>{{ item.item_name }}</div>
+                            <div>{{ item.item_price }}원</div>
+                        </button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="category dessert" style="display:none;">
+                {% for item in items %}
+                    {% if item.category == 'dessert' %}
+                        <button class="stampBtn" data-id="{{ item.id }}" data-name="{{ item.item_name }}" data-price="{{ item.item_price }}">
+                            <img src="{{ item.item_image.url }}" alt="수집 이미지" width="100" height="100">
+                            <div>{{ item.item_name }}</div>
+                            <div>{{ item.item_price }}원</div>
+                        </button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="cart">
+            <h2>Cart</h2>
+            <ul>
+                <li class="cart-item">
+                    <div class="item-info">
+                        <h3>Espresso</h3>
+                        <span class="quantity">x2</span>
+                        <span class="price">$5.00</span>
+                    </div>
+                </li>
+                <li class="cart-item">
+                    <div class="item-info">
+                        <h3>Latte</h3>
+                        <span class="quantity">x1</span>
+                        <span class="price">$3.50</span>
+                    </div>
+                </li>
+            </ul>
+            <div class="total">
+                <span>Total:</span>
+                <span class="price">$8.50</span>
+            </div>
+            <a href="#" class="checkout-button">Checkout</a>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; Team8</p>
+    </footer>
+</body>
+</html>

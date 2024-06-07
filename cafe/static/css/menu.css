@@ -35,6 +35,19 @@ main {
   margin-right: 20px;
 }
 
+.menu-categories a {
+  color: #000;
+  text-decoration: none;
+  opacity: 0.6;
+  font-weight: normal;
+}
+
+.menu-categories a.active {
+  color: #333;
+  font-weight: bold;
+  opacity: 1;
+}
+
 .menu-items {
   margin-bottom: 20px;
 }

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Item</title>
+</head>
+<body>
+    <h1>Edit Item</h1>
+
+    <form method='post' class="tmoney-font" enctype="multipart/form-data" action="{% url 'edit_item' item.id %}" id="edit-form">
+    {% csrf_token %}
+    {{ error_message }}
+    <div>
+        <label for="category">카테고리:</label>
+        <select id="category" name="category" required>
+            <option value="">-- 카테고리를 선택하세요 --</option>
+            <option value="coffee" {% if item.category == 'coffee' %}selected{% endif %}>Coffee</option>
+            <option value="tea_ade" {% if item.category == 'tea_ade' %}selected{% endif %}>Tea / Ade</option>
+            <option value="decaffein" {% if item.category == 'decaffein' %}selected{% endif %}>Decaffein</option>
+            <option value="dessert" {% if item.category == 'dessert' %}selected{% endif %}>Dessert</option>
+        </select>
+    </div>
+    <div>
+        <label for="item_name">아이템 이름:</label>
+        <input type="text" id="item_name" name="item_name" value="{{ item.item_name }}" required>
+    </div>
+    <div>
+        <label for="item_price">아이템 가격:</label>
+        <input type="number" id="item_price" name="item_price" value="{{ item.item_price }}" required>
+    </div>
+    <div>
+        <label for="item_image">아이템 이미지:</label>
+        <input type="file" id="item_image" name="item_image" accept="image/*">
+        {% if item.item_image %}
+            <br>
+            <img src="{{ item.item_image.url }}" alt="{{ item.item_name }}" width="100"><br>
+        {% endif %}
+    </div>
+    <div>
+        <div class="button">
+            <button type="submit" class="submit" name="action" value="save" id="saveButton">저장</button>
+            <button type="submit" class="submit" name="action" value="delete" id="deleteButton" style="background-color: red; color: white;">삭제</button>
+        </div>
+    </div>
+    </form>
+
+    {% if error_message %}
+        <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+</body>
+</html>

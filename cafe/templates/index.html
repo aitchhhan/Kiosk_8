@@ -15,16 +15,16 @@
         {% if request.session.manager_id %}
         {% else %}
         <button id="adminLoginBtn" style="background-color: #007BFF; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; width: 100px; height: 30px;">
-            <a href="{% url 'manager_login' %}" style="color: white; text-decoration: none; display: block; width: 100%; height: 100%; text-align: center; line-height: 30px;">관리자 로그인</a>
+            <a href='{% url 'manager_login' %}' style="color: white; text-decoration: none; display: block; width: 100%; height: 100%; text-align: center; line-height: 30px;">관리자 로그인</a>
         </button>
         {% endif %}
         <main>
             <div class="buttons">
                 <button id="eatInBtn">
-                  <a href="coffee">먹고 가요</a> 
+                <a href='{% url 'menu' %}'>먹고 가요</a> 
                 </button>
                 <button id="takeOutBtn">
-                  <a href="coffee">포장이요</a>
+                <a href='{% url 'menu' %}'>포장이요</a>
                 </button>
             </div>
         </main>
