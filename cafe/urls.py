@@ -7,19 +7,16 @@ urlpatterns = [
     path('', index, name='index'),
     # manager_pages
     path('manager/', manager, name='manager'),
-    path('menu_manage/', menu_manage, name='menu_manage'),
-    path('menu_list/', menu_list, name='menu_list'),
-    path('manager_login/', manager_login, name='manager_login'),
-    path('manager_logout/', manager_logout, name='manager_logout'),
-    path('add_item/', add_item, name='add_item'),
-    path('edit_item/<int:item_id>', edit_item, name='edit_item'),
+    path('manager/menu_manage/', menu_manage, name='menu_manage'),
+    path('manager/menu_list/', menu_list, name='menu_list'),
+    path('manager/manager_login/', manager_login, name='manager_login'),
+    path('manager/manager_logout/', manager_logout, name='manager_logout'),
+    path('manager/add_item/', add_item, name='add_item'),
+    path('manager/edit_item/<int:item_id>', edit_item, name='edit_item'),
     
     
     # user_pages
     path('menu/', menu, name='menu'),
-    path('decaffein/', decaffein, name='decaffein'),
-    path('dessert/', dessert, name='dessert'),
-    path('tea_ade/', tea_ade, name='tea_ade'),
 ]
 
 if settings.DEBUG:
