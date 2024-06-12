@@ -62,7 +62,7 @@
                     container: formData.get('container'),
                     temperature: formData.get('temperature'),
                     size: formData.get('size'),
-                    quantity: formData.get('quantity')
+                    quantity: parseInt(formData.get('quantity'))
                 };
 
                 addItemToCart(itemDetails);
@@ -77,18 +77,40 @@
                 cartItem.innerHTML = `
                     <div class="item-info">
                         <h3>${item.name} (${item.container}, ${item.temperature}, ${item.size})</h3>
-                        <span class="quantity">x${item.quantity}</span>
+                        <span class="quantity">x<span class="item-quantity">${item.quantity}</span></span>
                         <span class="price">${item.price * item.quantity}원</span>
                     </div>
-                    <button class="removeBtn">Remove</button>
+                    <div class="cart-controls">
+                        <button class="increaseBtn">+</button>
+                        <button class="decreaseBtn">-</button>
+                        <button class="removeBtn">Remove</button>
+                    </div>
                 `;
                 cart.appendChild(cartItem);
+
+                cartItem.querySelector('.increaseBtn').addEventListener('click', function() {
+                    item.quantity += 1;
+                    updateCartItem(cartItem, item);
+                });
+
+                cartItem.querySelector('.decreaseBtn').addEventListener('click', function() {
+                    if (item.quantity > 1) {
+                        item.quantity -= 1;
+                        updateCartItem(cartItem, item);
+                    }
+                });
 
                 cartItem.querySelector('.removeBtn').addEventListener('click', function() {
                     cartItem.remove();
                     updateTotal();
                 });
 
+                updateTotal();
+            }
+
+            function updateCartItem(cartItem, item) {
+                cartItem.querySelector('.item-quantity').textContent = item.quantity;
+                cartItem.querySelector('.price').textContent = `${item.price * item.quantity}원`;
                 updateTotal();
             }
 
@@ -139,7 +161,9 @@
             cursor: pointer;
         }
 
-        .removeBtn {
+        .removeBtn,
+        .increaseBtn,
+        .decreaseBtn {
             background-color: #f44336;
             color: white;
             border: none;
@@ -147,8 +171,15 @@
             cursor: pointer;
         }
 
-        .removeBtn:hover {
+        .removeBtn:hover,
+        .increaseBtn:hover,
+        .decreaseBtn:hover {
             background-color: #d32f2f;
+        }
+
+        .cart-controls {
+            display: flex;
+            gap: 10px;
         }
     </style>
 </head>
@@ -268,4 +299,4 @@
         <p>&copy; Team8</p>
     </footer>
 </body>
-</html>
+</html> 
