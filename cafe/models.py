@@ -1,63 +1,6 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 
-# class Member(models.Model):
-#     phone_number = models.CharField(max_length=15)
-#     points = models.PositiveIntegerField(default=0)
-
-#     def __str__(self):
-#         return self.phone_number
-
-# class Item(models.Model):
-#     name = models.CharField(max_length=100)
-#     price = models.DecimalField(max_digits=10, decimal_places=2)
-#     image = models.ImageField(upload_to='items/')
-
-#     def __str__(self):
-#         return self.name
-
-# class OrderItem(models.Model):
-#     CUP_CHOICES = [
-#         ('regular', 'Regular'),
-#         ('large', 'Large'),
-#     ]
-#     TEMP_CHOICES = [
-#         ('hot', 'Hot'),
-#         ('iced', 'Iced'),
-#     ]
-#     SIZE_CHOICES = [
-#         ('small', 'Small'),
-#         ('medium', 'Medium'),
-#         ('large', 'Large'),
-#     ]
-
-#     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-#     cup_type = models.CharField(max_length=10, choices=CUP_CHOICES)
-#     temperature = models.CharField(max_length=4, choices=TEMP_CHOICES)
-#     size = models.CharField(max_length=6, choices=SIZE_CHOICES)
-#     quantity = models.PositiveIntegerField()
-#     price = models.DecimalField(max_digits=10, decimal_places=2)
-
-#     def save(self, *args, **kwargs):
-#         self.price = self.item.price * self.quantity
-#         super().save(*args, **kwargs)
-
-#     def __str__(self):
-#         return f'{self.quantity} x {self.item.name}'
-
-# class Order(models.Model):
-#     member = models.ForeignKey(Member, on_delete=models.CASCADE)
-#     order_items = models.ManyToManyField(OrderItem)
-#     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-
-#     def save(self, *args, **kwargs):
-#         self.total_price = sum(item.price for item in self.order_items.all())
-#         super().save(*args, **kwargs)
-
-#     def __str__(self):
-#         return f'Order {self.id} by {self.member.phone_number}'
-
-
 class Member(models.Model):
     phone_number = models.IntegerField(unique=True)
     points = models.IntegerField(default=0)
@@ -102,9 +45,18 @@ class Item(models.Model):
     category = models.CharField(max_length=10, choices=CATEGORY, default='coffee')
 
 class Order(models.Model):
-    member = models.ForeignKey(Member, on_delete=models.CASCADE)
-    order_number = models.IntegerField(unique=True)
+    order_number = models.AutoField(primary_key=True)  # 자동 증가 필드로 설정
     total_price = models.IntegerField()
+    is_completed = models.BooleanField(default=False)  # 주문 완료 여부
+
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            last_order = Order.objects.all().order_by('order_number').last()
+            if last_order:
+                self.order_number = last_order.order_number + 1
+            else:
+                self.order_number = 1
+        super().save(*args, **kwargs)
 
     def check_total_price(self):
         total_price = 0
@@ -130,7 +82,7 @@ class OrderItem(models.Model):
         self.quantity = quantity
         self.price = self.item.price * self.quantity
         self.save()
-
+        
     def view_details(self):
         # 주문 상세 보기 기능 구현
         pass

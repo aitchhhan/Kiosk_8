@@ -1,3 +1,4 @@
+<!-- menu.html -->
 <!DOCTYPE html>
 {% load static %}
 <html lang="en">
@@ -13,6 +14,7 @@
             const itemModal = document.getElementById('itemModal');
             const closeModal = document.querySelector('.modal .close');
             const itemForm = document.getElementById('itemForm');
+            const checkoutButton = document.querySelector('.checkout-button');
 
             let selectedItem = null;
 
@@ -83,24 +85,30 @@
                     <div class="cart-controls">
                         <button class="increaseBtn">+</button>
                         <button class="decreaseBtn">-</button>
-                        <button class="removeBtn">Remove</button>
+                        <button class="removeBtn">X</button>
                     </div>
                 `;
                 cart.appendChild(cartItem);
 
-                cartItem.querySelector('.increaseBtn').addEventListener('click', function() {
+                const increaseBtn = cartItem.querySelector('.increaseBtn');
+                const decreaseBtn = cartItem.querySelector('.decreaseBtn');
+                const removeBtn = cartItem.querySelector('.removeBtn');
+
+                updateDecreaseButton(decreaseBtn, item.quantity);
+
+                increaseBtn.addEventListener('click', function() {
                     item.quantity += 1;
                     updateCartItem(cartItem, item);
                 });
 
-                cartItem.querySelector('.decreaseBtn').addEventListener('click', function() {
+                decreaseBtn.addEventListener('click', function() {
                     if (item.quantity > 1) {
                         item.quantity -= 1;
                         updateCartItem(cartItem, item);
                     }
                 });
 
-                cartItem.querySelector('.removeBtn').addEventListener('click', function() {
+                removeBtn.addEventListener('click', function() {
                     cartItem.remove();
                     updateTotal();
                 });
@@ -111,7 +119,16 @@
             function updateCartItem(cartItem, item) {
                 cartItem.querySelector('.item-quantity').textContent = item.quantity;
                 cartItem.querySelector('.price').textContent = `${item.price * item.quantity}원`;
+                updateDecreaseButton(cartItem.querySelector('.decreaseBtn'), item.quantity);
                 updateTotal();
+            }
+
+            function updateDecreaseButton(button, quantity) {
+                if (quantity <= 1) {
+                    button.disabled = true;
+                } else {
+                    button.disabled = false;
+                }
             }
 
             function updateTotal() {
@@ -126,6 +143,16 @@
         });
     </script>
     <style>
+        h1 a {
+            color: inherit;
+            text-decoration: none;
+        }
+        h1 a:visited,
+        h1 a:hover,
+        h1 a:active {
+            color: inherit;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -161,9 +188,9 @@
             cursor: pointer;
         }
 
-        .removeBtn,
         .increaseBtn,
-        .decreaseBtn {
+        .decreaseBtn,
+        .removeBtn {
             background-color: #f44336;
             color: white;
             border: none;
@@ -171,10 +198,17 @@
             cursor: pointer;
         }
 
-        .removeBtn:hover,
         .increaseBtn:hover,
-        .decreaseBtn:hover {
+        .decreaseBtn:hover,
+        .removeBtn:hover {
             background-color: #d32f2f;
+        }
+
+        .increaseBtn:disabled,
+        .decreaseBtn:disabled {
+            background-color: #ddd;
+            color: #999;
+            cursor: not-allowed;
         }
 
         .cart-controls {
@@ -249,12 +283,12 @@
         </section>
 
         <section class="cart">
-            <h2>Cart</h2>
+            <h2>장바구니</h2>
             <ul>
                 <!-- 기존 기본 장바구니 항목을 제거합니다 -->
             </ul>
             <div class="total">
-                <span>Total:</span>
+                <span>총 금액:</span>
                 <span class="price">0원</span>
             </div>
             <a href="#" class="checkout-button">Checkout</a>
@@ -263,35 +297,35 @@
     <div id="itemModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2>Customize your item</h2>
+            <h2>상세선택</h2>
             <form id="itemForm">
                 <div>
-                    <label>Container:</label>
+                    <label>컵 종류:</label>
                     <select name="container" required>
-                        <option value="disposable">일회용</option>
-                        <option value="tumbler">텀블러</option>
+                        <option value="일회용">일회용</option>
+                        <option value="텀블러">텀블러</option>
                     </select>
                 </div>
                 <div>
-                    <label>Temperature:</label>
+                    <label>온도:</label>
                     <select name="temperature" required>
-                        <option value="hot">핫</option>
-                        <option value="ice">아이스</option>
+                        <option value="핫">핫</option>
+                        <option value="아이스">아이스</option>
                     </select>
                 </div>
                 <div>
-                    <label>Size:</label>
+                    <label>크기:</label>
                     <select name="size" required>
-                        <option value="small">Small</option>
-                        <option value="medium">Medium</option>
-                        <option value="large">Large</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
                     </select>
                 </div>
                 <div>
-                    <label>Quantity:</label>
+                    <label>수량:</label>
                     <input type="number" name="quantity" min="1" value="1" required>
                 </div>
-                <button type="submit">Add to Cart</button>
+                <button type="submit">장바구니에 넣기</button>
             </form>
         </div>
     </div>
@@ -299,4 +333,4 @@
         <p>&copy; Team8</p>
     </footer>
 </body>
-</html> 
+</html>

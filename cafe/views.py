@@ -4,7 +4,10 @@ from .models import *
 from django.contrib import messages
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
-import os
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+import os, json 
 
 def index(request):
     # 메인 페이지 출력
@@ -21,6 +24,23 @@ def manager_login_required(view_func):
             return redirect('manager_login')  # 로그인 페이지로 리디렉션
         return view_func(request, *args, **kwargs)
     return _wrapped_view
+
+@manager_login_required
+@csrf_exempt
+def checkout(request):
+    if request.method == 'POST':
+        cart_data = json.loads(request.body)
+        
+        order = Order.objects.create(
+            total_price=cart_data['total'],
+            is_completed=True,
+            items=cart_data['items']
+        )
+        order.save()
+        return JsonResponse({'success': True, 'order_id': order.id})
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
 
 @manager_login_required
 def manager(request):
@@ -186,7 +206,9 @@ def menu_list(request):
     
     return render(request, 'manager_pages/menu_list.html', {'items': items})
 
-
+def order_list(request):
+    orders = Order.objects.filter(is_completed=True)
+    return render(request, 'order_list.html', {'orders': orders})
 # User_Pages #################################################################################################################
 # 쿠키 4.3 7.6 코드
 # npm개념
@@ -242,4 +264,3 @@ def menu(request):
                 return render(request, 'user_pages/menu.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
     return render(request, 'user_pages/menu.html', {'items': items})
-

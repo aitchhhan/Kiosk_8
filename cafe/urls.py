@@ -17,6 +17,8 @@ urlpatterns = [
     
     # user_pages
     path('menu/', menu, name='menu'),
+    path('checkout/', checkout, name='checkout'),
+    path('order_list/', order_list, name='order_list'),
 ]
 
 if settings.DEBUG:

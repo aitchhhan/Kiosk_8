@@ -1,0 +1,29 @@
+<!-- order_list.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order List</title>
+</head>
+<body>
+    <header>
+        <h1>주문 목록</h1>
+    </header>
+    <main>
+        <section class="orders">
+            {% for order in orders %}
+                <div class="order">
+                    <h2>주문 번호: {{ order.order_number }}</h2>
+                    <ul>
+                        {% for item in order.items %}
+                            <li>{{ item.name }} ({{ item.container }}, {{ item.temperature }}, {{ item.size }}) - {{ item.quantity }}개: {{ item.price }}원</li>
+                        {% endfor %}
+                    </ul>
+                    <p>총 금액: {{ order.total_price }}원</p>
+                </div>
+            {% endfor %}
+        </section>
+    </main>
+</body>
+</html>

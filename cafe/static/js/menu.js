@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
           container: formData.get('container'),
           temperature: formData.get('temperature'),
           size: formData.get('size'),
-          quantity: formData.get('quantity')
+          quantity: parseInt(formData.get('quantity'))
       };
 
       addItemToCart(itemDetails);
@@ -68,19 +68,56 @@ document.addEventListener('DOMContentLoaded', function() {
       cartItem.innerHTML = `
           <div class="item-info">
               <h3>${item.name} (${item.container}, ${item.temperature}, ${item.size})</h3>
-              <span class="quantity">x${item.quantity}</span>
+              <span class="quantity">x<span class="item-quantity">${item.quantity}</span></span>
               <span class="price">${item.price * item.quantity}원</span>
           </div>
-          <button class="removeBtn">-</button>
+          <div class="cart-controls">
+              <button class="increaseBtn">+</button>
+              <button class="decreaseBtn">-</button>
+              <button class="removeBtn">Remove</button>
+          </div>
       `;
       cart.appendChild(cartItem);
 
-      cartItem.querySelector('.removeBtn').addEventListener('click', function() {
+      const increaseBtn = cartItem.querySelector('.increaseBtn');
+      const decreaseBtn = cartItem.querySelector('.decreaseBtn');
+      const removeBtn = cartItem.querySelector('.removeBtn');
+
+      updateDecreaseButton(decreaseBtn, item.quantity);
+
+      increaseBtn.addEventListener('click', function() {
+          item.quantity += 1;
+          updateCartItem(cartItem, item);
+      });
+
+      decreaseBtn.addEventListener('click', function() {
+          if (item.quantity > 1) {
+              item.quantity -= 1;
+              updateCartItem(cartItem, item);
+          }
+      });
+
+      removeBtn.addEventListener('click', function() {
           cartItem.remove();
           updateTotal();
       });
 
       updateTotal();
+  }
+
+  function updateCartItem(cartItem, item) {
+      cartItem.querySelector('.item-quantity').textContent = item.quantity;
+      cartItem.querySelector('.price').textContent = `${item.price * item.quantity}원`;
+      updateDecreaseButton(cartItem.querySelector('.decreaseBtn'), item.quantity);
+      updateTotal();
+  }
+
+  function updateDecreaseButton(button, quantity) {
+      if (quantity <= 1) {
+          button.disabled = true;
+      } else {
+          button.disabled = false;
+      }
   }
 
   function updateTotal() {
