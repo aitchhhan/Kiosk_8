@@ -45,9 +45,15 @@ class Item(models.Model):
     category = models.CharField(max_length=10, choices=CATEGORY, default='coffee')
 
 class Order(models.Model):
+    ORDER_TYPE_CHOICES = [
+        ('eat_in', '먹고 가요'),
+        ('take_out', '포장이요'),
+    ]
     order_number = models.AutoField(primary_key=True)  # 자동 증가 필드로 설정
     total_price = models.IntegerField()
     is_completed = models.BooleanField(default=False)  # 주문 완료 여부
+    order_type = models.CharField(max_length=10, choices=ORDER_TYPE_CHOICES, default='eat_in')
+
 
     def save(self, *args, **kwargs):
         if not self.order_number:

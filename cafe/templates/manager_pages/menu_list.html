@@ -54,12 +54,115 @@
             });
         });
     </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            position: relative;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header h1 a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 10px;
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .back-button a {
+            text-decoration: none;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .back-button a:visited,
+        .back-button a:hover,
+        .back-button a:focus {
+            color: #fff;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .menu-categories ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .menu-categories li {
+            margin-bottom: 10px;
+        }
+
+        .menu-categories a {
+            text-decoration: none;
+            color: #000;
+            font-size: 18px;
+        }
+
+        .menu-categories a.active,
+        .menu-categories a:visited,
+        .menu-categories a:hover,
+        .menu-categories a:focus {
+            font-weight: bold;
+            color: #000;
+        }
+
+        .menu-items .category {
+            display: none;
+        }
+
+        .menu-items .category.active {
+            display: block;
+        }
+
+        .stampBtn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+        }
+
+        .stampBtn img {
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
-    <header>
+    <header class="header">
+        <button class="back-button"><a href='{% url "index" %}'>&larr;</a></button>
         <h1>
-            <a href="{% url 'index' %}">CAFE KIOSK</a>
-        </h1>   
+            <a href="{% url "index" %}">메뉴 수정 페이지</a>
+        </h1>
     </header>
     <main>
         <section class="menu-categories">
@@ -73,7 +176,7 @@
         </section>
 
         <section class="menu-items">
-            <h2>Menu Items</h2>
+            <h2>Menu</h2>
             <div class="category coffee">
                 {% for item in items %}
                     {% if item.category == 'coffee' %}
@@ -118,31 +221,6 @@
                     {% endif %}
                 {% endfor %}
             </div>
-        </section>
-
-        <section class="cart">
-            <h2>Cart</h2>
-            <ul>
-                <li class="cart-item">
-                    <div class="item-info">
-                        <h3>Espresso</h3>
-                        <span class="quantity">x2</span>
-                        <span class="price">$5.00</span>
-                    </div>
-                </li>
-                <li class="cart-item">
-                    <div class="item-info">
-                        <h3>Latte</h3>
-                        <span class="quantity">x1</span>
-                        <span class="price">$3.50</span>
-                    </div>
-                </li>
-            </ul>
-            <div class="total">
-                <span>Total:</span>
-                <span class="price">$8.50</span>
-            </div>
-            <a href="#" class="checkout-button">Checkout</a>
         </section>
     </main>
 

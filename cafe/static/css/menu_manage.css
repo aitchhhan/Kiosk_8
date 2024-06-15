@@ -37,16 +37,13 @@ button {
 }
 
 #addMenuBtn {
-  width: 400px; /* 버튼 너비 조절 */
-  height: 800px; /* 버튼 높이 조절 */
+  width: 400px; 
+  height: 400px; 
 }
 
 #upMenuBtn {
-  width: 400px; /* 버튼 너비 조절 */
-  height: 800px; /* 버튼 높이 조절 */
+  width: 400px; 
+  height: 400px; 
 }
 
-#deMenuBtn {
-  width: 400px; /* 버튼 너비 조절 */
-  height: 800px; /* 버튼 높이 조절 */
-}
+

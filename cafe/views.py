@@ -201,11 +201,11 @@ def order_list(request):
 
 def menu(request):
     items = Item.objects.all()
+    order_type = request.GET.get('order_type', 'eat_in')
     
     if request.method == 'POST':
         action = request.POST.get('action')
         
-        # 저장 눌렀을 때
         if action == 'save':
             updated_data = {'item_name': request.POST.get('item_name'),
                             'item_price': request.POST.get('item_price'),}
@@ -213,7 +213,6 @@ def menu(request):
             ori_name = request.POST.get('ori_name')
             new_name = request.POST.get('event_name')
             
-            # 스탬프 모델에 데이터 저장/이미지 입력
             images = request.FILES.get('item_image')
             try:
                 if images:
@@ -221,42 +220,38 @@ def menu(request):
                     filename = fs.save(images.name, images)
                     updated_data['image'] = filename
                     
-                # DB에 직접 업뎃
                 Item.objects.filter(event_name=ori_name).update(**updated_data)
                 
-                new_item_instance = Item.objects.get(item_name=new_name)  # 새로운 event_name에 해당하는 stamp 인스턴스
+                new_item_instance = Item.objects.get(item_name=new_name)
 
-                # 2. 연결된 stamp_collection 레코드 찾기 및 외래 키 값 업데이트
-                # related_stamp_collections = stamp_collection.objects.filter(stamp__event_name=ori_name)
-                # related_stamp_collections.update(stamp=new_stamp_instance)
-                
-                return redirect('menu')  # 수정 후 도장 목록으로 리디렉션
+                return redirect('menu')
 
             except Item.DoesNotExist:
-                    return render(request, 'user_pages/menu.html', {'error_message': '필드를 확인해주세요.'})
+                return render(request, 'user_pages/menu.html', {'error_message': '필드를 확인해주세요.'})
 
-        # 삭제 눌렀을 때
         if action == 'delete':
-            ori_stamp = request.POST.get('ori_name')  # 삭제할 스탬프의 ID를 받아옴
+            ori_stamp = request.POST.get('ori_name')
             
             try:
-                delstamp = Item.objects.get(event_name=ori_stamp)  # 해당 ID의 스탬프 객체를 가져옴
-                delstamp.delete()  # 스탬프 삭제
+                delstamp = Item.objects.get(event_name=ori_stamp)
+                delstamp.delete()
                 
-                return redirect('menu')  # 삭제 후 리다이렉트
+                return redirect('menu')
             except Item.DoesNotExist:
                 return render(request, 'user_pages/menu.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
-    return render(request, 'user_pages/menu.html', {'items': items})
+    return render(request, 'user_pages/menu.html', {'items': items, 'order_type': order_type})
+
 
 
 def checkout(request):
     if request.method == 'POST':
         cart_items = request.POST.getlist('cart_items')
         total_price = request.POST.get('total_price')
+        order_type = request.POST.get('order_type', 'eat_in')
 
         if cart_items:
-            new_order = Order(total_price=total_price, is_completed=True)
+            new_order = Order(total_price=total_price, is_completed=True, order_type=order_type)
             new_order.save()
 
             for item_data in cart_items:
@@ -284,6 +279,7 @@ def checkout(request):
             messages.error(request, '장바구니가 비어 있습니다.')
 
     return redirect('menu')
+
 
 @csrf_exempt
 def cancel_order(request):

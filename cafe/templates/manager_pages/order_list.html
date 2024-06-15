@@ -12,11 +12,40 @@
             background-color: #f8f8f8;
         }
 
-        header {
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background-color: #333;
             color: #fff;
-            padding: 10px 0;
-            text-align: center;
+            padding: 10px 20px;
+            position: relative;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 10px;
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .back-button a {
+            text-decoration: none;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .back-button a:visited,
+        .back-button a:hover,
+        .back-button a:focus {
+            color: #fff;
         }
 
         main {
@@ -145,27 +174,29 @@
     </script>
 </head>
 <body>
-    <header>
+    <header class="header">
+        <button class="back-button"><a href='{% url "manager" %}'>&larr;</a></button>
         <h1>주문 목록</h1>
     </header>
     <main>
         <section class="orders">
             {% if orders %}
-                <ul>
-                    {% for order in orders %}
-                        <li id="order-{{ order.order_number }}">
-                            <h2>주문 번호: {{ order.order_number }}</h2>
-                            <p>총 금액: {{ order.total_price }}원</p>
-                            <ul>
-                                {% for item in order.orderitem_set.all %}
-                                    <li>{{ item.item.item_name }} ({{ item.cup_type }}, {{ item.temperature }}, {{ item.size }}) x{{ item.quantity }} - {{ item.price }}원</li>
-                                {% endfor %}
-                            </ul>
-                            <button class="btn complete" onclick="completeOrder('{{ order.order_number }}')">완료</button>
-                            <button class="btn" onclick="cancelOrder('{{ order.order_number }}')">취소</button>
-                        </li>
-                    {% endfor %}
-                </ul>
+            <ul>
+                {% for order in orders %}
+                    <li id="order-{{ order.order_number }}">
+                        <h2>주문 번호: {{ order.order_number }}</h2>
+                        <p>주문 유형: {{ order.get_order_type_display }}</p>
+                        <p>총 금액: {{ order.total_price }}원</p>
+                        <ul>
+                            {% for item in order.orderitem_set.all %}
+                                <li>{{ item.item.item_name }} ({{ item.cup_type }}, {{ item.temperature }}, {{ item.size }}) x{{ item.quantity }} - {{ item.price }}원</li>
+                            {% endfor %}
+                        </ul>
+                        <button class="btn complete" onclick="completeOrder('{{ order.order_number }}')">완료</button>
+                        <button class="btn" onclick="cancelOrder('{{ order.order_number }}')">취소</button>
+                    </li>
+                {% endfor %}
+            </ul>
             {% else %}
                 <p>주문이 없습니다.</p>
             {% endif %}

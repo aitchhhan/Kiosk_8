@@ -8,7 +8,10 @@
     <link rel="stylesheet" href={% static "css/manager_login.css" %}>
 </head>
 <body>
-    <h2>Manager Login</h2>
+    <button class="back-button"><a href='{% url 'index' %}'>&larr;</a></button>
+    <header>
+        <h2>Manager Login</h2>
+    </header>
     <form method="post">
         {% csrf_token %}
         <label for="admin_id">Admin ID:</label>

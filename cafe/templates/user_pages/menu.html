@@ -199,6 +199,37 @@
             color: inherit;
         }
 
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            position: relative;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 10px;
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .back-button a {
+            text-decoration: none;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .back-button a:visited,
+        .back-button a:hover,
+        .back-button a:focus {
+            color: #fff;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -264,7 +295,8 @@
     </style>
 </head>
 <body>
-    <header>
+    <header class="header">
+        <button class="back-button"><a href='{% url 'index' %}'>&larr;</a></button>
         <h1>
             <a href='{% url 'index' %}'>CAFE KIOSK</a>
         </h1>   
@@ -340,9 +372,10 @@
             <form id="checkoutForm" action="{% url 'checkout' %}" method="post">
                 {% csrf_token %}
                 <input type="hidden" name="total_price" id="totalPrice" value="0">
+                <input type="hidden" name="order_type" value="{{ order_type }}">
                 <div id="cartItemsContainer"></div>
                 <button type="submit" class="checkout-button">Checkout</button>
-            </form>                  
+            </form>                               
         </section>
     </main>
     <div id="itemModal" class="modal">
