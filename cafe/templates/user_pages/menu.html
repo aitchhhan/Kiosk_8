@@ -1,4 +1,3 @@
-<!-- menu.html -->
 <!DOCTYPE html>
 {% load static %}
 <html lang="en">
@@ -17,6 +16,29 @@
             const checkoutButton = document.querySelector('.checkout-button');
 
             let selectedItem = null;
+
+            document.getElementById('checkoutForm').addEventListener('submit', function(event) {
+                event.preventDefault(); // 기본 폼 제출 동작을 막습니다.
+                updateCartItemsInput(); // 카트 아이템 정보를 업데이트합니다.
+
+                const form = event.target;
+                const formData = new FormData(form);
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', form.action, true);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        alert('주문이 성공적으로 완료되었습니다.');
+                        // 주문 완료 후 menu.html 페이지를 새로고침합니다.
+                        window.location.reload();
+                    } else {
+                        alert('주문 처리 중 오류가 발생했습니다.');
+                    }
+                };
+
+                xhr.send(formData);
+            });
 
             menuButtons.forEach(button => {
                 button.addEventListener('click', function(event) {
@@ -139,8 +161,32 @@
                     total += price;
                 });
                 document.querySelector('.cart .total .price').textContent = `${total}원`;
+                document.getElementById('totalPrice').value = total;  // 숨겨진 입력 필드 업데이트
             }
         });
+
+        function updateCartItemsInput() {
+            const cartItems = document.querySelectorAll('.cart .cart-item');
+            const cartItemsContainer = document.getElementById('cartItemsContainer');
+            cartItemsContainer.innerHTML = '';
+
+            cartItems.forEach(cartItem => {
+                const itemInfo = {
+                    name: cartItem.querySelector('h3').textContent.split(' ')[0],
+                    container: cartItem.querySelector('h3').textContent.split('(')[1].split(',')[0],
+                    temperature: cartItem.querySelector('h3').textContent.split(',')[1].trim(),
+                    size: cartItem.querySelector('h3').textContent.split(',')[2].split(')')[0].trim(),
+                    quantity: parseInt(cartItem.querySelector('.item-quantity').textContent),
+                    price: parseInt(cartItem.querySelector('.price').textContent.replace('원', '')) / parseInt(cartItem.querySelector('.item-quantity').textContent)
+                };
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'cart_items';
+                input.value = JSON.stringify(itemInfo);
+                cartItemsContainer.appendChild(input);
+            });
+        }
     </script>
     <style>
         h1 a {
@@ -291,7 +337,12 @@
                 <span>총 금액:</span>
                 <span class="price">0원</span>
             </div>
-            <a href="#" class="checkout-button">Checkout</a>
+            <form id="checkoutForm" action="{% url 'checkout' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="total_price" id="totalPrice" value="0">
+                <div id="cartItemsContainer"></div>
+                <button type="submit" class="checkout-button">Checkout</button>
+            </form>                  
         </section>
     </main>
     <div id="itemModal" class="modal">

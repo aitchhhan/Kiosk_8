@@ -1,14 +1,14 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 
-class Member(models.Model):
-    phone_number = models.IntegerField(unique=True)
-    points = models.IntegerField(default=0)
+# class Member(models.Model):
+#     phone_number = models.IntegerField(unique=True)
+#     points = models.IntegerField(default=0)
 
-    def point_earned(self, order_price):
-        earned_points = order_price // 100
-        self.points += earned_points
-        self.save()
+#     def point_earned(self, order_price):
+#         earned_points = order_price // 100
+#         self.points += earned_points
+#         self.save()
 
 class Manager(models.Model):
     admin_id = models.CharField(max_length=255, unique=True)

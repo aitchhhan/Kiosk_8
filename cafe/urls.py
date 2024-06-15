@@ -19,6 +19,9 @@ urlpatterns = [
     path('menu/', menu, name='menu'),
     path('checkout/', checkout, name='checkout'),
     path('order_list/', order_list, name='order_list'),
+    path('cancel_order/', cancel_order, name='cancel_order'),
+    path('complete_order/', complete_order, name='complete_order'),
+
 ]
 
 if settings.DEBUG:

@@ -25,22 +25,6 @@ def manager_login_required(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
-@manager_login_required
-@csrf_exempt
-def checkout(request):
-    if request.method == 'POST':
-        cart_data = json.loads(request.body)
-        
-        order = Order.objects.create(
-            total_price=cart_data['total'],
-            is_completed=True,
-            items=cart_data['items']
-        )
-        order.save()
-        return JsonResponse({'success': True, 'order_id': order.id})
-
-    return JsonResponse({'error': 'Invalid request method'}, status=400)
-
 
 @manager_login_required
 def manager(request):
@@ -208,7 +192,7 @@ def menu_list(request):
 
 def order_list(request):
     orders = Order.objects.filter(is_completed=True)
-    return render(request, 'order_list.html', {'orders': orders})
+    return render(request, 'manager_pages/order_list.html', {'orders': orders})
 # User_Pages #################################################################################################################
 # 쿠키 4.3 7.6 코드
 # npm개념
@@ -264,3 +248,63 @@ def menu(request):
                 return render(request, 'user_pages/menu.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
     return render(request, 'user_pages/menu.html', {'items': items})
+
+
+def checkout(request):
+    if request.method == 'POST':
+        cart_items = request.POST.getlist('cart_items')
+        total_price = request.POST.get('total_price')
+
+        if cart_items:
+            new_order = Order(total_price=total_price, is_completed=True)
+            new_order.save()
+
+            for item_data in cart_items:
+                item_details = json.loads(item_data)
+                item = Item.objects.get(item_name=item_details['name'])
+                OrderItem.objects.create(
+                    order=new_order,
+                    item=item,
+                    cup_type=item_details['container'],
+                    temperature=item_details['temperature'],
+                    size=item_details['size'],
+                    quantity=item_details['quantity'],
+                    price=item_details['price']
+                )
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'message': '주문이 성공적으로 완료되었습니다.'})
+
+            messages.success(request, '주문이 성공적으로 완료되었습니다.')
+            return redirect('menu')
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'message': '장바구니가 비어 있습니다.'}, status=400)
+
+            messages.error(request, '장바구니가 비어 있습니다.')
+
+    return redirect('menu')
+
+@csrf_exempt
+def cancel_order(request):
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        try:
+            order = Order.objects.get(order_number=order_id)
+            order.delete()
+            return JsonResponse({'status': 'success'})
+        except Order.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': '주문이 존재하지 않습니다.'}, status=400)
+    return JsonResponse({'status': 'error', 'message': '잘못된 요청입니다.'}, status=400)
+
+@csrf_exempt
+def complete_order(request):
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        try:
+            order = Order.objects.get(order_number=order_id)
+            order.delete()  # 완료된 주문은 삭제 처리
+            return JsonResponse({'status': 'success'})
+        except Order.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': '주문이 존재하지 않습니다.'}, status=400)
+    return JsonResponse({'status': 'error', 'message': '잘못된 요청입니다.'}, status=400)

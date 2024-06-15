@@ -1,10 +1,148 @@
-<!-- order_list.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order List</title>
+    <title>주문 목록</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        .orders {
+            max-height: 80vh; /* 스크롤 가능한 최대 높이 설정 */
+            overflow-y: auto; /* Y축 스크롤 활성화 */
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .orders ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .orders li {
+            background-color: #f1f1f1;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            position: relative; /* 버튼을 절대 위치로 배치하기 위해 추가 */
+        }
+
+        .orders h2 {
+            margin: 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .orders p {
+            margin: 5px 0;
+        }
+
+        .orders ul ul {
+            margin-top: 10px;
+        }
+
+        .btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .btn.complete {
+            right: 80px;
+            background-color: #4CAF50;
+        }
+
+        .btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .btn.complete:hover {
+            background-color: #388E3C;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+    <script>
+        function cancelOrder(orderNumber) {
+            if (confirm('정말로 이 주문을 취소하시겠습니까?')) {
+                // AJAX 요청을 통해 주문 취소를 서버에 알림
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '{% url "cancel_order" %}', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        alert('주문이 취소되었습니다.');
+                        const orderElement = document.getElementById('order-' + orderNumber);
+                        if (orderElement) {
+                            orderElement.remove();
+                        }
+                    } else {
+                        alert('주문 취소 중 오류가 발생했습니다.');
+                    }
+                };
+
+                xhr.send('order_id=' + orderNumber);
+            }
+        }
+
+        function completeOrder(orderNumber) {
+            if (confirm('정말로 이 주문을 완료하시겠습니까?')) {
+                // AJAX 요청을 통해 주문 완료를 서버에 알림
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '{% url "complete_order" %}', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        alert('주문이 완료되었습니다.');
+                        const orderElement = document.getElementById('order-' + orderNumber);
+                        if (orderElement) {
+                            orderElement.remove();
+                        }
+                    } else {
+                        alert('주문 완료 중 오류가 발생했습니다.');
+                    }
+                };
+
+                xhr.send('order_id=' + orderNumber);
+            }
+        }
+    </script>
 </head>
 <body>
     <header>
@@ -12,18 +150,29 @@
     </header>
     <main>
         <section class="orders">
-            {% for order in orders %}
-                <div class="order">
-                    <h2>주문 번호: {{ order.order_number }}</h2>
-                    <ul>
-                        {% for item in order.items %}
-                            <li>{{ item.name }} ({{ item.container }}, {{ item.temperature }}, {{ item.size }}) - {{ item.quantity }}개: {{ item.price }}원</li>
-                        {% endfor %}
-                    </ul>
-                    <p>총 금액: {{ order.total_price }}원</p>
-                </div>
-            {% endfor %}
+            {% if orders %}
+                <ul>
+                    {% for order in orders %}
+                        <li id="order-{{ order.order_number }}">
+                            <h2>주문 번호: {{ order.order_number }}</h2>
+                            <p>총 금액: {{ order.total_price }}원</p>
+                            <ul>
+                                {% for item in order.orderitem_set.all %}
+                                    <li>{{ item.item.item_name }} ({{ item.cup_type }}, {{ item.temperature }}, {{ item.size }}) x{{ item.quantity }} - {{ item.price }}원</li>
+                                {% endfor %}
+                            </ul>
+                            <button class="btn complete" onclick="completeOrder('{{ order.order_number }}')">완료</button>
+                            <button class="btn" onclick="cancelOrder('{{ order.order_number }}')">취소</button>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>주문이 없습니다.</p>
+            {% endif %}
         </section>
     </main>
+    <footer>
+        <p>&copy; Team8</p>
+    </footer>
 </body>
 </html>
