@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Sum
 
 import os, json 
 
@@ -190,9 +191,30 @@ def menu_list(request):
     
     return render(request, 'manager_pages/menu_list.html', {'items': items})
 
+@manager_login_required
 def order_list(request):
     orders = Order.objects.filter(is_completed=True)
     return render(request, 'manager_pages/order_list.html', {'orders': orders})
+
+@manager_login_required
+def sales(request):
+    completed_orders = Order.objects.filter(is_completed=True)
+    total_sales = sum(order.total_price for order in completed_orders)
+    context = {
+        'completed_orders': completed_orders,
+        'total_sales': total_sales
+    }
+    return render(request, 'manager_pages/sales.html', context)
+
+@csrf_exempt
+@manager_login_required
+def clear_completed_orders(request):
+    if request.method == 'POST':
+        Order.objects.filter(is_completed=True).delete()
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error', 'message': '잘못된 요청입니다.'}, status=400)
+
+
 # User_Pages #################################################################################################################
 # 쿠키 4.3 7.6 코드
 # npm개념

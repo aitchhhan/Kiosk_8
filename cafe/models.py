@@ -53,6 +53,7 @@ class Order(models.Model):
     total_price = models.IntegerField()
     is_completed = models.BooleanField(default=False)  # 주문 완료 여부
     order_type = models.CharField(max_length=10, choices=ORDER_TYPE_CHOICES, default='eat_in')
+    is_completed = models.BooleanField(default=False)  # 추가된 필드
 
 
     def save(self, *args, **kwargs):

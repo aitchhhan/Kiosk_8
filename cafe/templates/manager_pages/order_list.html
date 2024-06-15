@@ -11,22 +11,19 @@
             padding: 0;
             background-color: #f8f8f8;
         }
-
         .header {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between; /* 중앙 정렬에서 양쪽 정렬로 변경 */
             background-color: #333;
             color: #fff;
             padding: 10px 20px;
             position: relative;
         }
-
         .header h1 {
             margin: 0;
             font-size: 24px;
         }
-
         .back-button {
             position: absolute;
             left: 10px;
@@ -35,23 +32,35 @@
             padding: 0;
             cursor: pointer;
         }
-
         .back-button a {
             text-decoration: none;
             font-size: 24px;
             color: #fff;
         }
-
         .back-button a:visited,
         .back-button a:hover,
         .back-button a:focus {
             color: #fff;
         }
-
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .header-buttons .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            text-decoration: none; /* 링크 스타일 제거 */
+        }
+        .header-buttons .btn:hover {
+            background-color: #45a049;
+        }
         main {
             padding: 20px;
         }
-
         .orders {
             max-height: 80vh; /* 스크롤 가능한 최대 높이 설정 */
             overflow-y: auto; /* Y축 스크롤 활성화 */
@@ -60,12 +69,10 @@
             border-radius: 5px;
             padding: 10px;
         }
-
         .orders ul {
             list-style-type: none;
             padding: 0;
         }
-
         .orders li {
             background-color: #f1f1f1;
             margin-bottom: 10px;
@@ -73,21 +80,17 @@
             border-radius: 5px;
             position: relative; /* 버튼을 절대 위치로 배치하기 위해 추가 */
         }
-
         .orders h2 {
             margin: 0;
             padding-bottom: 5px;
             border-bottom: 1px solid #ddd;
         }
-
         .orders p {
             margin: 5px 0;
         }
-
         .orders ul ul {
             margin-top: 10px;
         }
-
         .btn {
             position: absolute;
             top: 10px;
@@ -99,20 +102,16 @@
             cursor: pointer;
             border-radius: 5px;
         }
-
         .btn.complete {
             right: 80px;
             background-color: #4CAF50;
         }
-
         .btn:hover {
             background-color: #d32f2f;
         }
-
         .btn.complete:hover {
             background-color: #388E3C;
         }
-
         footer {
             text-align: center;
             padding: 10px;
@@ -177,6 +176,9 @@
     <header class="header">
         <button class="back-button"><a href='{% url "manager" %}'>&larr;</a></button>
         <h1>주문 목록</h1>
+        <div class="header-buttons">
+            <a class="btn" href='{% url "sales" %}'>매출 확인</a>
+        </div>
     </header>
     <main>
         <section class="orders">
