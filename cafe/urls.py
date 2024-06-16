@@ -14,7 +14,11 @@ urlpatterns = [
     path('manager/add_item/', add_item, name='add_item'),
     path('manager/edit_item/<int:item_id>', edit_item, name='edit_item'),
     path('manager/sales/', sales, name='sales'),  # 매출 확인 페이지 URL 패턴 추가
-
+    path('manager/manage_seats/', manage_seats, name='manage_seats'),
+    path('manager/add_seat/', add_seat, name='add_seat'),
+    path('manager/edit_seat/<int:seat_id>/', edit_seat, name='edit_seat'),
+    path('manager/delete_seat/<int:seat_id>/', delete_seat, name='delete_seat'),
+    path('toggle_seat/', toggle_seat, name='toggle_seat'),
 
     
     # user_pages

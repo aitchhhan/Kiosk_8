@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum
 from django.utils import timezone
 from datetime import timedelta, datetime
+from django import template
 
 import os, json 
 
@@ -249,11 +250,74 @@ def sales(request):
     }
     return render(request, 'manager_pages/sales.html', context)
 
+register = template.Library()
 
+@register.filter
+def to_range(value, max_value):
+    return range(value, max_value + 1)
+
+@register.filter
+def get_item(sequence, position):
+    try:
+        return sequence[position - 1]
+    except IndexError:
+        return None
+
+@manager_login_required
+def manage_seats(request):
+    seats = Seat.objects.all()
+    return render(request, 'manager_pages/manage_seats.html', {'seats': seats})
+
+@manager_login_required
+def add_seat(request):
+    if request.method == 'POST':
+        seat_id = request.POST['seat_id']
+        row = request.POST['row']
+        column = request.POST['column']
+        if seat_id and row and column:
+            Seat.objects.create(seat_id=seat_id, row=row, column=column)
+            messages.success(request, '좌석이 성공적으로 추가되었습니다.')
+            return redirect('manage_seats')
+        else:
+            messages.error(request, '모든 필드를 입력해야 합니다.')
+    return render(request, 'manager_pages/add_seat.html')
+
+@manager_login_required
+def edit_seat(request, seat_id):
+    seat = get_object_or_404(Seat, id=seat_id)
+    if request.method == 'POST':
+        seat.seat_id = request.POST['seat_id']
+        seat.row = request.POST['row']
+        seat.column = request.POST['column']
+        seat.save()
+        messages.success(request, '좌석이 성공적으로 수정되었습니다.')
+        return redirect('manage_seats')
+    return render(request, 'manager_pages/edit_seat.html', {'seat': seat})
+
+@manager_login_required
+def delete_seat(request, seat_id):
+    seat = get_object_or_404(Seat, id=seat_id)
+    seat.delete()
+    messages.success(request, '좌석이 성공적으로 삭제되었습니다.')
+    return redirect('manage_seats')
 
 def get_year_range(start_year=2020):
     current_year = timezone.now().year
     return range(start_year, current_year + 1)
+
+@csrf_exempt
+def toggle_seat(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            seat_id = data.get('seat_id')
+            seat = get_object_or_404(Seat, seat_id=seat_id)
+            seat.is_available = not seat.is_available
+            seat.save()
+            return JsonResponse({'success': True})
+        except Seat.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Seat does not exist'})
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
 # User_Pages #################################################################################################################
 # 쿠키 4.3 7.6 코드

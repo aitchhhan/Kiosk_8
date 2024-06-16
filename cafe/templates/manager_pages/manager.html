@@ -139,9 +139,10 @@
             }
 
             #adminLogoutBtn {
-                font-size: 18px;
+                font-size: 20px;
                 padding: 15px 30px;
-                width: 120px;
+                width: 150px;
+                height: 70px;
             }
 
             #adminLogoutBtn a {
@@ -166,6 +167,9 @@
                 </button>
                 <button id="orderManageBtn">
                     <a href="{% url 'order_list' %}">주문관리</a>
+                </button>
+                <button id="orderManageBtn">
+                    <a href="{% url 'manage_seats' %}">좌석관리</a>
                 </button>
             </div>
         </main>
