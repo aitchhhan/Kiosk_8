@@ -6,7 +6,7 @@
     <title>매출 확인</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f8f8f8;
@@ -14,20 +14,20 @@
         .header {
             display: flex;
             align-items: center;
-            background-color: #333;
+            justify-content: center;
+            background-color: #2c3e50;
             color: #fff;
-            padding: 10px 20px;
+            padding: 15px 20px;
             position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .header h1 {
             margin: 0;
             font-size: 24px;
-            flex: 1;
-            text-align: center; /* 제목을 가운데 정렬 */
         }
         .back-button {
             position: absolute;
-            left: 10px;
+            left: 20px;
             background-color: transparent;
             border: none;
             padding: 0;
@@ -43,112 +43,190 @@
         .back-button a:focus {
             color: #fff;
         }
-        .header-buttons {
-            position: absolute;
-            right: 10px;
-        }
-        .header-buttons .btn {
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 5px;
-            text-decoration: none; /* 링크 스타일 제거 */
-        }
-        .header-buttons .btn:hover {
-            background-color: #d32f2f;
-        }
         main {
             padding: 20px;
+        }
+        .filters {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .filter-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 30%;
+        }
+        .filter-section h2 {
+            margin: 0 0 10px 0;
+        }
+        .filter-section form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .filter-section label {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            font-weight: bold;
+            color: #333;
+        }
+        .filter-section input,
+        .filter-section select {
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+        }
+        .filter-section button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .filter-section button:hover {
+            background-color: #45a049;
         }
         .sales {
             background-color: #fff;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .sales h2 {
             margin: 0 0 10px 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
         }
         .sales ul {
             list-style-type: none;
             padding: 0;
+            margin: 0;
         }
         .sales li {
             background-color: #f1f1f1;
             margin-bottom: 10px;
-            padding: 10px;
+            padding: 15px;
             border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .sales li:hover {
+            background-color: #e7e7e7;
         }
         .total-sales {
             font-size: 20px;
             font-weight: bold;
             margin-top: 20px;
             text-align: right;
+            color: #2c3e50;
         }
         footer {
             text-align: center;
             padding: 10px;
-            background-color: #333;
+            background-color: #2c3e50;
             color: #fff;
             position: fixed;
             bottom: 0;
             width: 100%;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
         }
-    </style>
-    <script>
-        function clearCompletedOrders() {
-            if (confirm('정말 누르시겠습니까?')) {
-                // AJAX 요청을 통해 완료된 주문 목록을 클리어하는 서버에 알림
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', '{% url "clear_completed_orders" %}', true);
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
-
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        alert('완료된 주문 목록이 클리어되었습니다.');
-                        window.location.reload();
-                    } else {
-                        alert('주문 목록 클리어 중 오류가 발생했습니다.');
-                    }
-                };
-
-                xhr.send();
+        @media (max-width: 768px) {
+            .filters {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .filter-section {
+                width: 100%;
             }
         }
-    </script>
+    </style>
 </head>
 <body>
     <header class="header">
         <button class="back-button"><a href='{% url "order_list" %}'>&larr;</a></button>
         <h1>매출 확인</h1>
-        <div class="header-buttons">
-            <button class="btn" onclick="clearCompletedOrders()">완료된 주문 목록 클리어</button>
-        </div>
     </header>
     <main>
-        <section class="sales">
-            <h2>완료된 주문</h2>
-            <ul>
-                {% for order in completed_orders %}
-                    <li>
-                        <h3>주문 번호: {{ order.order_number }}</h3>
-                        <p>총 금액: {{ order.total_price }}원</p>
-                        <ul>
-                            {% for item in order.orderitem_set.all %}
-                                <li>{{ item.item.item_name }} ({{ item.cup_type }}, {{ item.temperature }}, {{ item.size }}) x{{ item.quantity }} - {{ item.price }}원</li>
+        <section class="filters">
+            <div class="filter-section">
+                <h2>하루 매출 확인</h2>
+                <form method="get">
+                    <label>
+                        날짜 선택:
+                        <input type="date" name="date" value="{{ selected_date|default_if_none:'' }}">
+                    </label>
+                    <button type="submit">확인</button>
+                </form>
+            </div>
+            <div class="filter-section">
+                <h2>한달 매출 확인</h2>
+                <form method="get">
+                    <label>
+                        월 선택:
+                        <input type="month" name="month" value="{{ selected_month|default_if_none:'' }}">
+                    </label>
+                    <button type="submit">확인</button>
+                </form>
+            </div>
+            <div class="filter-section">
+                <h2>연 매출 확인</h2>
+                <form method="get">
+                    <label>
+                        연도 선택:
+                        <select name="year">
+                            {% for year in year_range %}
+                                <option value="{{ year }}" {% if year|stringformat:"s" == selected_year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
                             {% endfor %}
-                        </ul>
-                    </li>
-                {% endfor %}
-            </ul>
+                        </select>
+                    </label>
+                    <button type="submit">확인</button>
+                </form>
+            </div>
+        </section>
+
+        {% if day_sales is not None %}
+        <section class="sales">
+            <h2>선택한 날짜의 매출</h2>
+            <div class="total-sales">하루 매출: {{ day_sales }}원</div>
+        </section>
+        {% endif %}
+        
+        {% if month_sales is not None %}
+        <section class="sales">
+            <h2>선택한 월의 매출</h2>
+            <div class="total-sales">한달 매출: {{ month_sales }}원</div>
+        </section>
+        {% endif %}
+        
+        {% if year_sales is not None %}
+        <section class="sales">
+            <h2>선택한 연도의 매출</h2>
+            <div class="total-sales">연 매출: {{ year_sales }}원</div>
+        </section>
+        {% endif %}
+
+        <section class="sales">
+            <h2>오늘의 매출</h2>
+            <div class="total-sales">오늘의 매출: {{ today_sales }}원</div>
+        </section>
+
+        <section class="sales">
+            <h2>지금까지의 총 매출</h2>
             <div class="total-sales">총 매출: {{ total_sales }}원</div>
         </section>
     </main>
-    <footer>
-        <p>&copy; Team8</p>
-    </footer>
 </body>
 </html>

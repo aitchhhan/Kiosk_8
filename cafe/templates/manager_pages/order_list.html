@@ -25,8 +25,6 @@
             font-size: 24px;
         }
         .back-button {
-            position: absolute;
-            left: 10px;
             background-color: transparent;
             border: none;
             padding: 0;
@@ -45,6 +43,7 @@
         .header-buttons {
             display: flex;
             gap: 10px;
+            align-items: center;
         }
         .header-buttons .btn {
             background-color: #4CAF50;
@@ -54,6 +53,7 @@
             cursor: pointer;
             border-radius: 5px;
             text-decoration: none; /* 링크 스타일 제거 */
+            font-weight: bold;
         }
         .header-buttons .btn:hover {
             background-color: #45a049;
@@ -125,7 +125,6 @@
     <script>
         function cancelOrder(orderNumber) {
             if (confirm('정말로 이 주문을 취소하시겠습니까?')) {
-                // AJAX 요청을 통해 주문 취소를 서버에 알림
                 const xhr = new XMLHttpRequest();
                 xhr.open('POST', '{% url "cancel_order" %}', true);
                 xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -149,7 +148,6 @@
 
         function completeOrder(orderNumber) {
             if (confirm('정말로 이 주문을 완료하시겠습니까?')) {
-                // AJAX 요청을 통해 주문 완료를 서버에 알림
                 const xhr = new XMLHttpRequest();
                 xhr.open('POST', '{% url "complete_order" %}', true);
                 xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');

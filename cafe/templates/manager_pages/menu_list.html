@@ -65,7 +65,7 @@
         .header {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: center; /* 중앙 정렬 */
             background-color: #333;
             color: #fff;
             padding: 10px 20px;
@@ -75,6 +75,8 @@
         .header h1 {
             margin: 0;
             font-size: 24px;
+            text-align: center; /* 텍스트 중앙 정렬 */
+            flex: 1;
         }
 
         .header h1 a {
@@ -101,6 +103,23 @@
         .back-button a:hover,
         .back-button a:focus {
             color: #fff;
+        }
+
+        .add-menu-button {
+            position: absolute;
+            right: 10px;
+            background-color: #fff;
+            color: #000;
+            border: 2px solid #000;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .add-menu-button:hover {
+            background-color: #f0f0f0;
         }
 
         .container {
@@ -163,6 +182,7 @@
         <h1>
             <a href="{% url "index" %}">메뉴 수정 페이지</a>
         </h1>
+        <button class="add-menu-button" onclick="location.href='{% url 'add_item' %}'">메뉴 추가</button>
     </header>
     <main>
         <section class="menu-categories">

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
+from django.utils import timezone
 
 # class Member(models.Model):
 #     phone_number = models.IntegerField(unique=True)
@@ -49,12 +50,11 @@ class Order(models.Model):
         ('eat_in', '먹고 가요'),
         ('take_out', '포장이요'),
     ]
-    order_number = models.AutoField(primary_key=True)  # 자동 증가 필드로 설정
+    order_number = models.AutoField(primary_key=True)
     total_price = models.IntegerField()
-    is_completed = models.BooleanField(default=False)  # 주문 완료 여부
+    is_completed = models.BooleanField(default=False)
     order_type = models.CharField(max_length=10, choices=ORDER_TYPE_CHOICES, default='eat_in')
-    is_completed = models.BooleanField(default=False)  # 추가된 필드
-
+    created_at = models.DateTimeField(default=timezone.now)  # 주문 생성 시간 필드 추가
 
     def save(self, *args, **kwargs):
         if not self.order_number:
@@ -73,7 +73,6 @@ class Order(models.Model):
         self.save()
 
     def cart(self):
-        # 장바구니 기능 구현
         pass
 
 class OrderItem(models.Model):

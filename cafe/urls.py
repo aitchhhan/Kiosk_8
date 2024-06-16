@@ -14,7 +14,6 @@ urlpatterns = [
     path('manager/add_item/', add_item, name='add_item'),
     path('manager/edit_item/<int:item_id>', edit_item, name='edit_item'),
     path('manager/sales/', sales, name='sales'),  # 매출 확인 페이지 URL 패턴 추가
-    path('manager/clear_completed_orders/', clear_completed_orders, name='clear_completed_orders'),  # 추가된 URL 패턴
 
 
     

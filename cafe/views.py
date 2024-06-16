@@ -7,6 +7,8 @@ from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum
+from django.utils import timezone
+from datetime import timedelta, datetime
 
 import os, json 
 
@@ -94,7 +96,7 @@ def add_item(request):
                     category = category,
                 )
                 item.save()
-                return redirect('menu')
+                return redirect('menu_list')
             else:
                 # 필요한 모든 데이터가 제출되지 않은 경우에 대한 처리
                 error_message = "모든 필드를 입력해야 합니다."
@@ -193,27 +195,65 @@ def menu_list(request):
 
 @manager_login_required
 def order_list(request):
-    orders = Order.objects.filter(is_completed=True)
+    orders = Order.objects.filter(is_completed=False)
     return render(request, 'manager_pages/order_list.html', {'orders': orders})
 
 @manager_login_required
 def sales(request):
+    now = timezone.now()
+    
+    selected_date = request.GET.get('date', None)
+    selected_month = request.GET.get('month', None)
+    selected_year = request.GET.get('year', None)
+
     completed_orders = Order.objects.filter(is_completed=True)
-    total_sales = sum(order.total_price for order in completed_orders)
+
+    if selected_date:
+        start_of_selected_day = datetime.strptime(selected_date, '%Y-%m-%d').replace(hour=0, minute=0, second=0, microsecond=0)
+        end_of_selected_day = start_of_selected_day + timedelta(days=1)
+        day_sales = completed_orders.filter(created_at__gte=start_of_selected_day, created_at__lt=end_of_selected_day).aggregate(Sum('total_price'))['total_price__sum'] or 0
+    else:
+        day_sales = None
+
+    if selected_month:
+        start_of_selected_month = datetime.strptime(selected_month, '%Y-%m').replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        end_of_selected_month = (start_of_selected_month + timedelta(days=31)).replace(day=1)
+        month_sales = completed_orders.filter(created_at__gte=start_of_selected_month, created_at__lt=end_of_selected_month).aggregate(Sum('total_price'))['total_price__sum'] or 0
+    else:
+        month_sales = None
+
+    if selected_year:
+        start_of_selected_year = datetime.strptime(selected_year, '%Y').replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        end_of_selected_year = start_of_selected_year.replace(year=start_of_selected_year.year + 1)
+        year_sales = completed_orders.filter(created_at__gte=start_of_selected_year, created_at__lt=end_of_selected_year).aggregate(Sum('total_price'))['total_price__sum'] or 0
+    else:
+        year_sales = None
+
+    total_sales = completed_orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
+
+    start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_today = start_of_today + timedelta(days=1)
+    today_sales = completed_orders.filter(created_at__gte=start_of_today, created_at__lt=end_of_today).aggregate(Sum('total_price'))['total_price__sum'] or 0
+
     context = {
         'completed_orders': completed_orders,
-        'total_sales': total_sales
+        'day_sales': day_sales,
+        'month_sales': month_sales,
+        'year_sales': year_sales,
+        'total_sales': total_sales,
+        'today_sales': today_sales,
+        'selected_date': selected_date,
+        'selected_month': selected_month,
+        'selected_year': selected_year,
+        'year_range': get_year_range(),
     }
     return render(request, 'manager_pages/sales.html', context)
 
-@csrf_exempt
-@manager_login_required
-def clear_completed_orders(request):
-    if request.method == 'POST':
-        Order.objects.filter(is_completed=True).delete()
-        return JsonResponse({'status': 'success'})
-    return JsonResponse({'status': 'error', 'message': '잘못된 요청입니다.'}, status=400)
 
+
+def get_year_range(start_year=2020):
+    current_year = timezone.now().year
+    return range(start_year, current_year + 1)
 
 # User_Pages #################################################################################################################
 # 쿠키 4.3 7.6 코드
@@ -273,7 +313,7 @@ def checkout(request):
         order_type = request.POST.get('order_type', 'eat_in')
 
         if cart_items:
-            new_order = Order(total_price=total_price, is_completed=True, order_type=order_type)
+            new_order = Order(total_price=total_price, is_completed=False, order_type=order_type)
             new_order.save()
 
             for item_data in cart_items:
@@ -321,7 +361,8 @@ def complete_order(request):
         order_id = request.POST.get('order_id')
         try:
             order = Order.objects.get(order_number=order_id)
-            order.delete()  # 완료된 주문은 삭제 처리
+            order.is_completed = True
+            order.save()
             return JsonResponse({'status': 'success'})
         except Order.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': '주문이 존재하지 않습니다.'}, status=400)
