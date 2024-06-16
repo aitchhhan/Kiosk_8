@@ -6,12 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAFE KIOSK</title>
     <link rel="stylesheet" href="{% static 'css/menu.css' %}">
-    <!-- jQuery 및 아임포트 라이브러리 추가 -->
     <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
     <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
     <script>
         var IMP = window.IMP; 
-        IMP.init("imp53883146");  // 여기에 가맹점 식별코드 입력
+        IMP.init("imp53883146");
 
         document.addEventListener('DOMContentLoaded', function() {
             const menuButtons = document.querySelectorAll('.menu-categories li a');
@@ -22,12 +21,18 @@
             const itemForm = document.getElementById('itemForm');
 
             let selectedItem = null;
+            let selectedSeat = null;
 
             // Checkout button click handling
             checkoutButton.addEventListener('click', function(event) {
                 event.preventDefault();
-                updateCartItemsInput();
-                requestPay();  // 결제 요청 함수 호출
+                const orderType = document.querySelector('input[name="order_type"]').value;
+                if (orderType === 'take_out') {
+                    updateCartItemsInput();
+                    requestPay(null);
+                } else {
+                    document.getElementById('seatSelectionModal').style.display = 'block';
+                }
             });
 
             // Close modal handling
@@ -180,18 +185,46 @@
                 });
             }
 
-            function requestPay() {
+            document.getElementById('selectSeatBtn').addEventListener('click', function() {
+                document.getElementById('seatSelectionModal').style.display = 'none';
+                document.getElementById('seatModal').style.display = 'block';
+            });
+
+            document.getElementById('skipSeatBtn').addEventListener('click', function() {
+                document.getElementById('seatSelectionModal').style.display = 'none';
+                updateCartItemsInput();
+                requestPay(null);
+            });
+
+            document.querySelectorAll('.seat-item.available').forEach(function(seatItem) {
+                seatItem.addEventListener('click', function() {
+                    document.querySelectorAll('.seat-item').forEach(function(item) {
+                        item.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    selectedSeat = this.getAttribute('data-seat-id');
+                });
+            });
+
+            document.getElementById('confirmSeatBtn').addEventListener('click', function() {
+                if (selectedSeat) {
+                    document.getElementById('seatModal').style.display = 'none';
+                    updateCartItemsInput();
+                    requestPay(selectedSeat);
+                } else {
+                    alert('좌석을 선택해주세요.');
+                }
+            });
+
+            function requestPay(seatId) {
                 const total = document.getElementById('totalPrice').value;
                 const makeMerchantUid = Date.now().toString();
-
-                // 장바구니 아이템 이름들을 추출합니다.
                 const cartItems = document.querySelectorAll('.cart .cart-item');
                 let itemNames = [];
                 cartItems.forEach(cartItem => {
                     const itemName = cartItem.querySelector('h3').textContent.split(' ')[0];
                     itemNames.push(itemName);
                 });
-
                 const itemNamesString = itemNames.join(', ');
 
                 IMP.request_pay({
@@ -208,7 +241,14 @@
                 }, function (rsp) { 
                     if (rsp.success) {
                         alert('결제가 완료되었습니다.');
-                        window.location.href = "{% url 'seating' %}";  // 결제가 완료되면 좌석 선택 페이지로 이동합니다.
+                        if (seatId) {
+                            const seatInput = document.createElement('input');
+                            seatInput.type = 'hidden';
+                            seatInput.name = 'seat_id';
+                            seatInput.value = seatId;
+                            document.getElementById('checkoutForm').appendChild(seatInput);
+                        }
+                        document.getElementById('checkoutForm').submit();
                     } else {
                         alert('결제에 실패하였습니다. 에러 내용: ' + rsp.error_msg);
                     }
@@ -320,6 +360,35 @@
             display: flex;
             gap: 10px;
         }
+
+        .seat-selection-container {
+            display: grid;
+            grid-template-columns: repeat(7, 50px);
+            grid-template-rows: repeat(6, 50px);
+            gap: 5px;
+        }
+
+        .seat-item {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+        }
+
+        .available {
+            background-color: green;
+        }
+
+        .unavailable {
+            background-color: red;
+        }
+
+        .selected {
+            border: 2px solid blue;
+        }
     </style>
 </head>
 <body>
@@ -407,6 +476,35 @@
             </form>                               
         </section>
     </main>
+
+    <!-- 좌석 선택 여부 묻는 모달창 -->
+    <div id="seatSelectionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeSeatSelectionModal">&times;</span>
+            <h2>좌석을 선택하시겠습니까?</h2>
+            <button id="selectSeatBtn">좌석 선택</button>
+            <button id="skipSeatBtn">선택 안 함</button>
+        </div>
+    </div>
+
+    <!-- 좌석 선택 모달창 -->
+    <div id="seatModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeSeatModal">&times;</span>
+            <h2>좌석 선택</h2>
+            <div class="seat-selection-container">
+                {% for seat in seats %}
+                    <div class="seat-item {% if seat.is_available %}available{% else %}unavailable{% endif %}" 
+                         data-seat-id="{{ seat.seat_id }}" 
+                         style="grid-row: {{ seat.row }}; grid-column: {{ seat.column }};">
+                        {{ seat.seat_id }}
+                    </div>
+                {% endfor %}
+            </div>
+            <button id="confirmSeatBtn">확인</button>
+        </div>
+    </div>
+
     <div id="itemModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>

@@ -14,7 +14,7 @@
         .header {
             display: flex;
             align-items: center;
-            justify-content: space-between; /* 중앙 정렬에서 양쪽 정렬로 변경 */
+            justify-content: space-between;
             background-color: #333;
             color: #fff;
             padding: 10px 20px;
@@ -52,7 +52,7 @@
             padding: 5px 10px;
             cursor: pointer;
             border-radius: 5px;
-            text-decoration: none; /* 링크 스타일 제거 */
+            text-decoration: none;
             font-weight: bold;
         }
         .header-buttons .btn:hover {
@@ -62,8 +62,8 @@
             padding: 20px;
         }
         .orders {
-            max-height: 80vh; /* 스크롤 가능한 최대 높이 설정 */
-            overflow-y: auto; /* Y축 스크롤 활성화 */
+            max-height: 80vh;
+            overflow-y: auto;
             background-color: #fff;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -78,7 +78,7 @@
             margin-bottom: 10px;
             padding: 10px;
             border-radius: 5px;
-            position: relative; /* 버튼을 절대 위치로 배치하기 위해 추가 */
+            position: relative;
         }
         .orders h2 {
             margin: 0;
@@ -187,6 +187,7 @@
                     <h2>주문 번호: {{ order.order_number }}</h2>
                     <p>주문 유형: {{ order.get_order_type_display }}</p>
                     <p>총 금액: {{ order.total_price }}원</p>
+                    <p>좌석: {% if order.seat %}{{ order.seat.seat_id }}{% else %}선택하지 않음{% endif %}</p>
                     <ul>
                         {% for item in order.orderitem_set.all %}
                             <li>{{ item.item.item_name }} ({{ item.cup_type }}, {{ item.temperature }}, {{ item.size }}) x{{ item.quantity }} - {{ item.price }}원</li>

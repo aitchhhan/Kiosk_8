@@ -263,6 +263,7 @@ def get_year_range(start_year=2020):
 
 def menu(request):
     items = Item.objects.all()
+    seats = Seat.objects.all()  # 좌석 정보를 가져옵니다.
     order_type = request.GET.get('order_type', 'eat_in')
     
     if request.method == 'POST':
@@ -302,7 +303,8 @@ def menu(request):
             except Item.DoesNotExist:
                 return render(request, 'user_pages/menu.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
-    return render(request, 'user_pages/menu.html', {'items': items, 'order_type': order_type})
+    return render(request, 'user_pages/menu.html', {'items': items, 'seats': seats, 'order_type': order_type})
+
 
 def checkout(request):
     if request.method == 'POST':
@@ -310,9 +312,15 @@ def checkout(request):
         total_price = request.POST.get('total_price')
         order_type = request.POST.get('order_type', 'eat_in')
         payment_type = request.POST.get('payment_type')
+        seat_id = request.POST.get('seat_id')  # 추가된 좌석 정보
 
         if cart_items:
             new_order = Order(total_price=total_price, is_completed=False, order_type=order_type, payment_type=payment_type)
+            if seat_id:
+                seat = Seat.objects.get(seat_id=seat_id)
+                new_order.seat = seat  # 주문에 좌석 정보 추가
+                seat.is_available = False
+                seat.save()
             new_order.save()
 
             for item_data in cart_items:
@@ -340,7 +348,6 @@ def checkout(request):
             messages.error(request, '장바구니가 비어 있습니다.')
 
     return redirect('menu')
-
 
 
 @csrf_exempt
