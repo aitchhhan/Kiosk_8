@@ -23,7 +23,8 @@ urlpatterns = [
     path('order_list/', order_list, name='order_list'),
     path('cancel_order/', cancel_order, name='cancel_order'),
     path('complete_order/', complete_order, name='complete_order'),
-
+    path('payment/', payment, name='payment'),
+    path('payment/complete/', payment_complete, name='payment_complete'),
 ]
 
 if settings.DEBUG:

@@ -1,43 +1,63 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coffee Shop Menu</title>
+    <title>CAFE KIOSK</title>
     <link rel="stylesheet" href="{% static 'css/menu.css' %}">
+    <!-- jQuery 및 아임포트 라이브러리 추가 -->
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
     <script>
+        var IMP = window.IMP; 
+        IMP.init("imp53883146");  // 여기에 가맹점 식별코드 입력
+
         document.addEventListener('DOMContentLoaded', function() {
             const menuButtons = document.querySelectorAll('.menu-categories li a');
             const menuItems = document.querySelectorAll('.menu-items .category');
             const itemModal = document.getElementById('itemModal');
-            const closeModal = document.querySelector('.modal .close');
-            const itemForm = document.getElementById('itemForm');
+            const closeModal = document.querySelectorAll('.modal .close');
             const checkoutButton = document.querySelector('.checkout-button');
+            const itemForm = document.getElementById('itemForm');
 
             let selectedItem = null;
 
-            document.getElementById('checkoutForm').addEventListener('submit', function(event) {
-                event.preventDefault(); // 기본 폼 제출 동작을 막습니다.
-                updateCartItemsInput(); // 카트 아이템 정보를 업데이트합니다.
+            // Checkout button click handling
+            checkoutButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                updateCartItemsInput();
+                requestPay();  // 결제 요청 함수 호출
+            });
 
-                const form = event.target;
-                const formData = new FormData(form);
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', form.action, true);
-                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            // Close modal handling
+            closeModal.forEach(button => {
+                button.addEventListener('click', function() {
+                    this.closest('.modal').style.display = 'none';
+                });
+            });
 
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        alert('주문이 성공적으로 완료되었습니다.');
-                        // 주문 완료 후 menu.html 페이지를 새로고침합니다.
-                        window.location.reload();
-                    } else {
-                        alert('주문 처리 중 오류가 발생했습니다.');
-                    }
+            window.addEventListener('click', function(event) {
+                if (event.target == itemModal) {
+                    itemModal.style.display = 'none';
+                }
+            });
+
+            itemForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const formData = new FormData(itemForm);
+                const itemDetails = {
+                    name: selectedItem.name,
+                    price: selectedItem.price,
+                    container: formData.get('container'),
+                    temperature: formData.get('temperature'),
+                    size: formData.get('size'),
+                    quantity: parseInt(formData.get('quantity'))
                 };
 
-                xhr.send(formData);
+                addItemToCart(itemDetails);
+                itemModal.style.display = 'none';
+                itemForm.reset();
             });
 
             menuButtons.forEach(button => {
@@ -65,33 +85,6 @@
                     };
                     itemModal.style.display = 'block';
                 });
-            });
-
-            closeModal.addEventListener('click', function() {
-                itemModal.style.display = 'none';
-            });
-
-            window.addEventListener('click', function(event) {
-                if (event.target == itemModal) {
-                    itemModal.style.display = 'none';
-                }
-            });
-
-            itemForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-                const formData = new FormData(itemForm);
-                const itemDetails = {
-                    name: selectedItem.name,
-                    price: selectedItem.price,
-                    container: formData.get('container'),
-                    temperature: formData.get('temperature'),
-                    size: formData.get('size'),
-                    quantity: parseInt(formData.get('quantity'))
-                };
-
-                addItemToCart(itemDetails);
-                itemModal.style.display = 'none';
-                itemForm.reset();
             });
 
             function addItemToCart(item) {
@@ -161,32 +154,67 @@
                     total += price;
                 });
                 document.querySelector('.cart .total .price').textContent = `${total}원`;
-                document.getElementById('totalPrice').value = total;  // 숨겨진 입력 필드 업데이트
+                document.getElementById('totalPrice').value = total;
+            }
+
+            function updateCartItemsInput() {
+                const cartItems = document.querySelectorAll('.cart .cart-item');
+                const cartItemsContainer = document.getElementById('cartItemsContainer');
+                cartItemsContainer.innerHTML = '';
+
+                cartItems.forEach(cartItem => {
+                    const itemInfo = {
+                        name: cartItem.querySelector('h3').textContent.split(' ')[0],
+                        container: cartItem.querySelector('h3').textContent.split('(')[1].split(',')[0],
+                        temperature: cartItem.querySelector('h3').textContent.split(',')[1].trim(),
+                        size: cartItem.querySelector('h3').textContent.split(',')[2].split(')')[0].trim(),
+                        quantity: parseInt(cartItem.querySelector('.item-quantity').textContent),
+                        price: parseInt(cartItem.querySelector('.price').textContent.replace('원', '')) / parseInt(cartItem.querySelector('.item-quantity').textContent)
+                    };
+
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'cart_items';
+                    input.value = JSON.stringify(itemInfo);
+                    cartItemsContainer.appendChild(input);
+                });
+            }
+
+            function requestPay() {
+                const total = document.getElementById('totalPrice').value;
+                const makeMerchantUid = Date.now().toString();
+
+                // 장바구니 아이템 이름들을 추출합니다.
+                const cartItems = document.querySelectorAll('.cart .cart-item');
+                let itemNames = [];
+                cartItems.forEach(cartItem => {
+                    const itemName = cartItem.querySelector('h3').textContent.split(' ')[0];
+                    itemNames.push(itemName);
+                });
+
+                const itemNamesString = itemNames.join(', ');
+
+                IMP.request_pay({
+                    pg : 'kcp',
+                    pay_method : 'card',
+                    merchant_uid: "IMP" + makeMerchantUid,
+                    name : `주문명: ${itemNamesString}`,
+                    amount : total,
+                    buyer_email : 'iamport@chai.finance',
+                    buyer_name : '아임포트 기술지원팀',
+                    buyer_tel : '010-1234-5678',
+                    buyer_addr : '서울특별시 강남구 삼성동',
+                    buyer_postcode : '123-456'
+                }, function (rsp) { 
+                    if (rsp.success) {
+                        alert('결제가 완료되었습니다.');
+                        document.getElementById('checkoutForm').submit();  // 결제가 완료되면 폼을 제출합니다.
+                    } else {
+                        alert('결제에 실패하였습니다. 에러 내용: ' + rsp.error_msg);
+                    }
+                });
             }
         });
-
-        function updateCartItemsInput() {
-            const cartItems = document.querySelectorAll('.cart .cart-item');
-            const cartItemsContainer = document.getElementById('cartItemsContainer');
-            cartItemsContainer.innerHTML = '';
-
-            cartItems.forEach(cartItem => {
-                const itemInfo = {
-                    name: cartItem.querySelector('h3').textContent.split(' ')[0],
-                    container: cartItem.querySelector('h3').textContent.split('(')[1].split(',')[0],
-                    temperature: cartItem.querySelector('h3').textContent.split(',')[1].trim(),
-                    size: cartItem.querySelector('h3').textContent.split(',')[2].split(')')[0].trim(),
-                    quantity: parseInt(cartItem.querySelector('.item-quantity').textContent),
-                    price: parseInt(cartItem.querySelector('.price').textContent.replace('원', '')) / parseInt(cartItem.querySelector('.item-quantity').textContent)
-                };
-
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'cart_items';
-                input.value = JSON.stringify(itemInfo);
-                cartItemsContainer.appendChild(input);
-            });
-        }
     </script>
     <style>
         h1 a {
@@ -373,8 +401,9 @@
                 {% csrf_token %}
                 <input type="hidden" name="total_price" id="totalPrice" value="0">
                 <input type="hidden" name="order_type" value="{{ order_type }}">
+                <input type="hidden" name="payment_type" id="paymentType" value="card">
                 <div id="cartItemsContainer"></div>
-                <button type="submit" class="checkout-button">Checkout</button>
+                <button type="button" class="checkout-button">Checkout</button>
             </form>                               
         </section>
     </main>
@@ -413,6 +442,7 @@
             </form>
         </div>
     </div>
+
     <footer>
         <p>&copy; Team8</p>
     </footer>

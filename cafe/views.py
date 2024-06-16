@@ -195,7 +195,7 @@ def menu_list(request):
 
 @manager_login_required
 def order_list(request):
-    orders = Order.objects.filter(is_completed=False)
+    orders = Order.objects.filter(is_completed=False)  # 미완료 주문만 조회
     return render(request, 'manager_pages/order_list.html', {'orders': orders})
 
 @manager_login_required
@@ -304,16 +304,15 @@ def menu(request):
     
     return render(request, 'user_pages/menu.html', {'items': items, 'order_type': order_type})
 
-
-
 def checkout(request):
     if request.method == 'POST':
         cart_items = request.POST.getlist('cart_items')
         total_price = request.POST.get('total_price')
         order_type = request.POST.get('order_type', 'eat_in')
+        payment_type = request.POST.get('payment_type')
 
         if cart_items:
-            new_order = Order(total_price=total_price, is_completed=False, order_type=order_type)
+            new_order = Order(total_price=total_price, is_completed=False, order_type=order_type, payment_type=payment_type)
             new_order.save()
 
             for item_data in cart_items:
@@ -341,6 +340,60 @@ def checkout(request):
             messages.error(request, '장바구니가 비어 있습니다.')
 
     return redirect('menu')
+
+
+
+@csrf_exempt
+def payment(request):
+    if request.method == 'POST':
+        cart_items = request.POST.getlist('cart_items')
+        total_price = request.POST.get('total_price')
+        order_type = request.POST.get('order_type', 'eat_in')
+
+        if cart_items:
+            context = {
+                'cart_items': cart_items,
+                'total': total_price,
+                'counter': len(cart_items),
+                'order_type': order_type,
+            }
+            return render(request, 'user_pages/payment.html', context)
+    return redirect('menu')
+
+@csrf_exempt
+def payment_complete(request):
+    if request.method == 'POST':
+        imp_uid = request.POST.get('imp_uid')
+        merchant_uid = request.POST.get('merchant_uid')
+        paid_amount = request.POST.get('paid_amount')
+        status = request.POST.get('status')
+        cart_items = json.loads(request.POST.get('cart_items'))
+        total_price = request.POST.get('total_price')
+        order_type = request.POST.get('order_type')
+
+        if status == 'paid':
+            new_order = Order(total_price=total_price, is_completed=False, order_type=order_type, payment_type='card')
+            new_order.save()
+
+            for item_data in cart_items:
+                item_details = item_data
+                item = Item.objects.get(item_name=item_details['name'])
+                OrderItem.objects.create(
+                    order=new_order,
+                    item=item,
+                    cup_type=item_details['container'],
+                    temperature=item_details['temperature'],
+                    size=item_details['size'],
+                    quantity=item_details['quantity'],
+                    price=item_details['price']
+                )
+
+            messages.success(request, '결제가 성공적으로 완료되었습니다.')
+            return JsonResponse({'message': '주문이 성공적으로 완료되었습니다.'})
+        else:
+            return JsonResponse({'message': '결제 실패.'}, status=400)
+    return JsonResponse({'message': '잘못된 요청입니다.'}, status=400)
+
 
 
 @csrf_exempt

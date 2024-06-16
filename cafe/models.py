@@ -50,12 +50,19 @@ class Order(models.Model):
         ('eat_in', '먹고 가요'),
         ('take_out', '포장이요'),
     ]
+    PAYMENT_TYPE_CHOICES = [
+        ('cash', '현금'),
+        ('card', '카드'),
+        ('naver_pay', '네이버 페이'),
+        ('apple_pay', '애플페이'),
+    ]
     order_number = models.AutoField(primary_key=True)
     total_price = models.IntegerField()
     is_completed = models.BooleanField(default=False)
     order_type = models.CharField(max_length=10, choices=ORDER_TYPE_CHOICES, default='eat_in')
+    payment_type = models.CharField(max_length=10, choices=PAYMENT_TYPE_CHOICES, default='cash')  # 새로운 필드 추가
     created_at = models.DateTimeField(default=timezone.now)  # 주문 생성 시간 필드 추가
-
+    
     def save(self, *args, **kwargs):
         if not self.order_number:
             last_order = Order.objects.all().order_by('order_number').last()
