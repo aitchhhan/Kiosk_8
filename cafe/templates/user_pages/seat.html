@@ -1,0 +1,42 @@
+<!-- seat_selection.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Seat Selection</title>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(7, 50px);
+            grid-template-rows: repeat(6, 50px);
+            gap: 5px;
+        }
+        .grid-item {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+        }
+        .available {
+            background-color: green;
+        }
+        .unavailable {
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Select a Seat</h1>
+    <div class="grid-container">
+        {% for seat in seats %}
+            <a href="{% url 'book_seat' seat.seat_id %}" 
+               class="grid-item {% if seat.is_available %}available{% else %}unavailable{% endif %}" 
+               style="grid-row: {{ seat.row }}; grid-column: {{ seat.column }};">
+                {{ seat.seat_id }}
+            </a>
+        {% endfor %}
+    </div>
+</body>
+</html>

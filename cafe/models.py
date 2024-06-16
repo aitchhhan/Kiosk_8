@@ -62,7 +62,7 @@ class Order(models.Model):
     order_type = models.CharField(max_length=10, choices=ORDER_TYPE_CHOICES, default='eat_in')
     payment_type = models.CharField(max_length=10, choices=PAYMENT_TYPE_CHOICES, default='cash')  # 새로운 필드 추가
     created_at = models.DateTimeField(default=timezone.now)  # 주문 생성 시간 필드 추가
-    
+
     def save(self, *args, **kwargs):
         if not self.order_number:
             last_order = Order.objects.all().order_by('order_number').last()
@@ -99,3 +99,12 @@ class OrderItem(models.Model):
     def view_details(self):
         # 주문 상세 보기 기능 구현
         pass
+    
+class Seat(models.Model):
+    seat_id = models.CharField(max_length=10, unique=True)
+    is_available = models.BooleanField(default=True)
+    row = models.IntegerField(default=0)
+    column = models.IntegerField(default=0)
+    
+    def __str__(self):
+        return self.seat_id

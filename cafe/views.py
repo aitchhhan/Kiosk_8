@@ -420,3 +420,14 @@ def complete_order(request):
         except Order.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': '주문이 존재하지 않습니다.'}, status=400)
     return JsonResponse({'status': 'error', 'message': '잘못된 요청입니다.'}, status=400)
+
+def seat(request):
+    seats = Seat.objects.all()
+    return render(request, 'user_pages/seat.html', {'seats': seats})
+
+def book_seat(request, seat_id):
+    seat = get_object_or_404(Seat, seat_id=seat_id)
+    if seat.is_available:
+        seat.is_available = False
+        seat.save()
+    return redirect('seat')

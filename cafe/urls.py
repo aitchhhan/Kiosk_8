@@ -25,6 +25,9 @@ urlpatterns = [
     path('complete_order/', complete_order, name='complete_order'),
     path('payment/', payment, name='payment'),
     path('payment/complete/', payment_complete, name='payment_complete'),
+    path('seat/', seat, name='seat'),
+    path('book/<str:seat_id>/', book_seat, name='book_seat'),
+
 ]
 
 if settings.DEBUG:
