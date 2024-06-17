@@ -204,7 +204,7 @@
                     this.classList.add('selected');
                     selectedSeat = this.getAttribute('data-seat-id');
                 });
-            });
+            });            
 
             document.getElementById('confirmSeatBtn').addEventListener('click', function() {
                 if (selectedSeat) {
@@ -248,12 +248,90 @@
                             seatInput.value = seatId;
                             document.getElementById('checkoutForm').appendChild(seatInput);
                         }
-                        document.getElementById('checkoutForm').submit();
+                        // 결제 완료 후 스탬프 적립 모달을 연다.
+                        openStampModal();
                     } else {
-                        alert('결제에 실패하였습니다. 에러 내용: ' + rsp.error_msg);
+                        alert('결제에 실패하였습니다. ' + rsp.error_msg);
                     }
                 });
             }
+
+            // 스탬프 적립 모달 창
+            function openStampModal() {
+                document.getElementById('orderCompleteModal').style.display = "block";
+            }
+
+            function closeStampModal() {
+                document.getElementById('orderCompleteModal').style.display = "none";
+            }
+
+            function appendNumber(number) {
+                document.getElementById('phoneNumber').value += number;
+            }
+
+            function clearNumber() {
+                document.getElementById('phoneNumber').value = '';
+            }
+
+            function submitPhoneNumber() {
+                var phoneNumber = document.getElementById('phoneNumber').value;
+                if (phoneNumber) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', '{% url "add_stamp" %}', true);
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+
+                    xhr.onload = function() {
+                        var response = JSON.parse(xhr.responseText);
+                        alert(response.message);
+                        if (xhr.status === 200) {
+                            closeStampModal();
+                            // 주문 완료 후 checkoutForm을 전송합니다.
+                            document.getElementById('checkoutForm').submit();
+                        } else {
+                            // 오류 메시지를 사용자에게 표시합니다.
+                            alert(response.message);
+                        }
+                    };
+
+                    xhr.send('phone_number=' + phoneNumber);
+                } else {
+                    alert('전화번호를 입력해주세요.');
+                }
+            }
+
+            // 이벤트 리스너를 추가합니다.
+            document.querySelectorAll('.numpad button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const value = this.textContent;
+                    if (value === '지우기') {
+                        clearNumber();
+                    } else if (value === '확인') {
+                        submitPhoneNumber();
+                    } else {
+                        appendNumber(value);
+                    }
+                });
+            });
+
+            // Close the stamp modal when the user clicks on <span> (x)
+            document.querySelectorAll('#orderCompleteModal .close').forEach(function(closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    closeStampModal();
+                });
+            });
+
+            document.getElementById('skipStampBtn').addEventListener('click', function() {
+                closeStampModal();
+                document.getElementById('checkoutForm').submit();
+            });
+
+            // Ensure the modal doesn't close immediately after opening
+            setTimeout(function() {
+                if (document.getElementById('orderCompleteModal').style.display === "block") {
+                    document.getElementById('orderCompleteModal').style.display = "block";
+                }
+            }, 100);
         });
     </script>
     <style>
@@ -387,6 +465,7 @@
         }
 
         .selected {
+            background-color: blue !important;
             border: 2px solid blue;
         }
 
@@ -408,6 +487,41 @@
             background-color: #333;
         }
 
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .numpad button {
+            padding: 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .skip-button {
+            margin-top: 10px;
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .skip-button:hover {
+            background-color: #b71c1c;
+        }
     </style>
 </head>
 <body>
@@ -524,6 +638,7 @@
         </div>
     </div>
 
+    <!-- 주문 상세 선택 모달 -->
     <div id="itemModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -557,6 +672,30 @@
                 </div>
                 <button type="submit">장바구니에 넣기</button>
             </form>
+        </div>
+    </div>
+
+    <!-- 스탬프 적립 모달 -->
+    <div id="orderCompleteModal" class="modal">
+        <div class="modal-content">
+            <h2>스탬프 적립</h2>
+            <p>전화번호를 입력하여 스탬프를 적립하시겠습니까?</p>
+            <input type="text" id="phoneNumber" class="input-field" readonly>
+            <div class="numpad">
+                <button>1</button>
+                <button>2</button>
+                <button>3</button>
+                <button>4</button>
+                <button>5</button>
+                <button>6</button>
+                <button>7</button>
+                <button>8</button>
+                <button>9</button>
+                <button>0</button>
+                <button>지우기</button>
+                <button>확인</button>
+            </div>
+            <button id="skipStampBtn" class="skip-button">적립하지 않음</button>
         </div>
     </div>
 

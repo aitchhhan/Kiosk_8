@@ -2,14 +2,15 @@ from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from django.utils import timezone
 
-# class Member(models.Model):
-#     phone_number = models.IntegerField(unique=True)
-#     points = models.IntegerField(default=0)
+class Member(models.Model):
+    phone_number = models.CharField(max_length=15, unique=True)
+    stamps = models.IntegerField(default=0)
+    last_stamp_date = models.DateField(null=True, blank=True)
 
-#     def point_earned(self, order_price):
-#         earned_points = order_price // 100
-#         self.points += earned_points
-#         self.save()
+    def add_stamp(self, count=1):
+        self.stamps += count
+        self.last_stamp_date = timezone.now().date()
+        self.save()
 
 class Manager(models.Model):
     admin_id = models.CharField(max_length=255, unique=True)
@@ -109,4 +110,3 @@ class OrderItem(models.Model):
     def view_details(self):
         # 주문 상세 보기 기능 구현
         pass
-    

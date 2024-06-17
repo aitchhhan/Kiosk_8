@@ -31,6 +31,7 @@ urlpatterns = [
     path('payment/complete/', payment_complete, name='payment_complete'),
     path('seat/', seat, name='seat'),
     path('book/<str:seat_id>/', book_seat, name='book_seat'),
+    path('add_stamp/', add_stamp, name='add_stamp'),
 
 ]
 

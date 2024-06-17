@@ -502,3 +502,21 @@ def book_seat(request, seat_id):
         seat.is_available = False
         seat.save()
     return redirect('seat')
+
+@csrf_exempt
+def add_stamp(request):
+    if request.method == 'POST':
+        phone_number = request.POST.get('phone_number')
+        if phone_number:
+            member, created = Member.objects.get_or_create(phone_number=phone_number)
+            today = timezone.now().date()
+            if member.last_stamp_date == today:
+                return JsonResponse({'message': '오늘은 이미 적립하셨습니다. 내일 다시 적립해주세요.'}, status=400)
+            member.add_stamp(1)
+            message = '스탬프가 적립되었습니다.'
+            if created:
+                message += ' 신규 회원이 등록되었습니다.'
+            return JsonResponse({'message': message})
+        else:
+            return JsonResponse({'message': '전화번호를 입력해주세요.'}, status=400)
+    return JsonResponse({'message': '잘못된 요청입니다.'}, status=400)
