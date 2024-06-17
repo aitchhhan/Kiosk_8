@@ -147,18 +147,13 @@
             <h1>CAFE KIOSK</h1>
             <img id="coffeeImage" src="{% static 'images/coffee_cup.png' %}" alt="Coffee Cup">
         </header>
-        {% if not request.session.manager_id %}
-            <button id="adminLoginBtn">
-                <a href="{% url 'manager_login' %}">관리자 로그인</a>
-            </button>
-        {% endif %}
         <main>
             <div class="buttons">
                 <button id="eatInBtn">
-                    <a href="{% url 'menu' %}?order_type=eat_in">먹고 가요</a> 
+                    <a href="{% url 'ja_menu' %}?order_type=eat_in">店内</a> 
                 </button>
                 <button id="takeOutBtn">
-                    <a href="{% url 'menu' %}?order_type=take_out">포장이요</a>
+                    <a href="{% url 'ja_menu' %}?order_type=take_out">持ち帰り</a>
                 </button>
             </div>
         </main>

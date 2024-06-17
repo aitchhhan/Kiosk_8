@@ -41,10 +41,14 @@ class Item(models.Model):
         ('decaffein', 'Decaffein'),
         ('dessert', 'Dessert'),
     ]
-    item_name = models.CharField(max_length=255)
+    item_name_ko = models.CharField(max_length=255, default='')
+    item_name_ja = models.CharField(max_length=255, default='')
+    item_name_en = models.CharField(max_length=255, default='')
+    item_name_jz = models.CharField(max_length=255, default='')
     item_price = models.IntegerField()
     item_image = models.ImageField(upload_to='images/')
     category = models.CharField(max_length=10, choices=CATEGORY, default='coffee')
+
 
 class Seat(models.Model):
     seat_id = models.CharField(max_length=10, unique=True)
@@ -96,7 +100,6 @@ class Order(models.Model):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    cup_type = models.CharField(max_length=255)
     temperature = models.CharField(max_length=255)
     size = models.CharField(max_length=255)
     quantity = models.IntegerField()

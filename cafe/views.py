@@ -13,9 +13,25 @@ from django import template
 
 import os, json 
 
-def index(request):
+def main(request):
     # 메인 페이지 출력
-    return render(request, 'index.html')
+    return render(request, 'main.html')
+
+def ko_order_type(request):
+    # 메인 페이지 출력
+    return render(request, 'user_pages/ko/ko_order_type.html')
+
+def en_order_type(request):
+    # 메인 페이지 출력
+    return render(request, 'user_pages/en/en_order_type.html')
+
+def ja_order_type(request):
+    # 메인 페이지 출력
+    return render(request, 'user_pages/ja/ja_order_type.html')
+
+def zh_order_type(request):
+    # 메인 페이지 출력
+    return render(request, 'user_pages/zh/zh_order_type.html')
 
 
 # Manager_Pages #################################################################################################################
@@ -325,7 +341,7 @@ def toggle_seat(request):
 # 시뮬라이즈
 # cpu 계산
 
-def menu(request):
+def ko_menu(request):
     items = Item.objects.all()
     seats = Seat.objects.all()  # 좌석 정보를 가져옵니다.
     order_type = request.GET.get('order_type', 'eat_in')
@@ -351,10 +367,10 @@ def menu(request):
                 
                 new_item_instance = Item.objects.get(item_name=new_name)
 
-                return redirect('menu')
+                return redirect('ko_menu')
 
             except Item.DoesNotExist:
-                return render(request, 'user_pages/menu.html', {'error_message': '필드를 확인해주세요.'})
+                return render(request, 'user_pages/ko/ko_menu.html', {'error_message': '필드를 확인해주세요.'})
 
         if action == 'delete':
             ori_stamp = request.POST.get('ori_name')
@@ -363,14 +379,145 @@ def menu(request):
                 delstamp = Item.objects.get(event_name=ori_stamp)
                 delstamp.delete()
                 
-                return redirect('menu')
+                return redirect('ko_menu')
             except Item.DoesNotExist:
-                return render(request, 'user_pages/menu.html', {'error_message': '이벤트가 존재하지 않습니다.'})
+                return render(request, 'user_pages/ko/ko_menu.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
-    return render(request, 'user_pages/menu.html', {'items': items, 'seats': seats, 'order_type': order_type})
+    return render(request, 'user_pages/ko/ko_menu.html', {'items': items, 'seats': seats, 'order_type': order_type})
 
+def en_menu(request):
+    items = Item.objects.all()
+    seats = Seat.objects.all()  # 좌석 정보를 가져옵니다.
+    order_type = request.GET.get('order_type', 'eat_in')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'save':
+            updated_data = {'item_name': request.POST.get('item_name'),
+                            'item_price': request.POST.get('item_price'),}
+            
+            ori_name = request.POST.get('ori_name')
+            new_name = request.POST.get('event_name')
+            
+            images = request.FILES.get('item_image')
+            try:
+                if images:
+                    fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT))
+                    filename = fs.save(images.name, images)
+                    updated_data['image'] = filename
+                    
+                Item.objects.filter(event_name=ori_name).update(**updated_data)
+                
+                new_item_instance = Item.objects.get(item_name=new_name)
 
-def checkout(request):
+                return redirect('en_menu')
+
+            except Item.DoesNotExist:
+                return render(request, 'user_pages/en/en_menu.html', {'error_message': '필드를 확인해주세요.'})
+
+        if action == 'delete':
+            ori_stamp = request.POST.get('ori_name')
+            
+            try:
+                delstamp = Item.objects.get(event_name=ori_stamp)
+                delstamp.delete()
+                
+                return redirect('en_menu')
+            except Item.DoesNotExist:
+                return render(request, 'user_pages/en/en_menu.html', {'error_message': '이벤트가 존재하지 않습니다.'})
+    
+    return render(request, 'user_pages/en/en_menu.html', {'items': items, 'seats': seats, 'order_type': order_type})
+
+def ja_menu(request):
+    items = Item.objects.all()
+    seats = Seat.objects.all()  # 좌석 정보를 가져옵니다.
+    order_type = request.GET.get('order_type', 'eat_in')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'save':
+            updated_data = {'item_name': request.POST.get('item_name'),
+                            'item_price': request.POST.get('item_price'),}
+            
+            ori_name = request.POST.get('ori_name')
+            new_name = request.POST.get('event_name')
+            
+            images = request.FILES.get('item_image')
+            try:
+                if images:
+                    fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT))
+                    filename = fs.save(images.name, images)
+                    updated_data['image'] = filename
+                    
+                Item.objects.filter(event_name=ori_name).update(**updated_data)
+                
+                new_item_instance = Item.objects.get(item_name=new_name)
+
+                return redirect('ja_menu')
+
+            except Item.DoesNotExist:
+                return render(request, 'user_pages/ja/ja_menu.html', {'error_message': '필드를 확인해주세요.'})
+
+        if action == 'delete':
+            ori_stamp = request.POST.get('ori_name')
+            
+            try:
+                delstamp = Item.objects.get(event_name=ori_stamp)
+                delstamp.delete()
+                
+                return redirect('ja_menu')
+            except Item.DoesNotExist:
+                return render(request, 'user_pages/ja/ja_menu.html', {'error_message': '이벤트가 존재하지 않습니다.'})
+    
+    return render(request, 'user_pages/ja/ja_menu.html', {'items': items, 'seats': seats, 'order_type': order_type})
+
+def zh_menu(request):
+    items = Item.objects.all()
+    seats = Seat.objects.all()  # 좌석 정보를 가져옵니다.
+    order_type = request.GET.get('order_type', 'eat_in')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'save':
+            updated_data = {'item_name': request.POST.get('item_name'),
+                            'item_price': request.POST.get('item_price'),}
+            
+            ori_name = request.POST.get('ori_name')
+            new_name = request.POST.get('event_name')
+            
+            images = request.FILES.get('item_image')
+            try:
+                if images:
+                    fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT))
+                    filename = fs.save(images.name, images)
+                    updated_data['image'] = filename
+                    
+                Item.objects.filter(event_name=ori_name).update(**updated_data)
+                
+                new_item_instance = Item.objects.get(item_name=new_name)
+
+                return redirect('zh_menu')
+
+            except Item.DoesNotExist:
+                return render(request, 'user_pages/zh/zh_menu.html', {'error_message': '필드를 확인해주세요.'})
+
+        if action == 'delete':
+            ori_stamp = request.POST.get('ori_name')
+            
+            try:
+                delstamp = Item.objects.get(event_name=ori_stamp)
+                delstamp.delete()
+                
+                return redirect('zh_menu')
+            except Item.DoesNotExist:
+                return render(request, 'user_pages/zh/zh_menu.html', {'error_message': '이벤트가 존재하지 않습니다.'})
+    
+    return render(request, 'user_pages/zh/zh_menu.html', {'items': items, 'seats': seats, 'order_type': order_type})
+
+def ko_checkout(request):
     if request.method == 'POST':
         cart_items = request.POST.getlist('cart_items')
         total_price = request.POST.get('total_price')
@@ -389,11 +536,10 @@ def checkout(request):
 
             for item_data in cart_items:
                 item_details = json.loads(item_data)
-                item = Item.objects.get(item_name=item_details['name'])
+                item = Item.objects.get(item_name_ko=item_details['name'])
                 OrderItem.objects.create(
                     order=new_order,
                     item=item,
-                    cup_type=item_details['container'],
                     temperature=item_details['temperature'],
                     size=item_details['size'],
                     quantity=item_details['quantity'],
@@ -404,15 +550,140 @@ def checkout(request):
                 return JsonResponse({'message': '주문이 성공적으로 완료되었습니다.'})
 
             messages.success(request, '주문이 성공적으로 완료되었습니다.')
-            return redirect('menu')
+            return redirect('main')
         else:
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'message': '장바구니가 비어 있습니다.'}, status=400)
 
             messages.error(request, '장바구니가 비어 있습니다.')
 
-    return redirect('menu')
+    return redirect('ko_menu')
 
+def ja_checkout(request):
+    if request.method == 'POST':
+        cart_items = request.POST.getlist('cart_items')
+        total_price = request.POST.get('total_price')
+        order_type = request.POST.get('order_type', 'eat_in')
+        payment_type = request.POST.get('payment_type')
+        seat_id = request.POST.get('seat_id')  # 추가된 좌석 정보
+
+        if cart_items:
+            new_order = Order(total_price=total_price, is_completed=False, order_type=order_type, payment_type=payment_type)
+            if seat_id:
+                seat = Seat.objects.get(seat_id=seat_id)
+                new_order.seat = seat  # 주문에 좌석 정보 추가
+                seat.is_available = False
+                seat.save()
+            new_order.save()
+
+            for item_data in cart_items:
+                item_details = json.loads(item_data)
+                item = Item.objects.get(item_name_ja=item_details['name'])
+                OrderItem.objects.create(
+                    order=new_order,
+                    item=item,
+                    temperature=item_details['temperature'],
+                    size=item_details['size'],
+                    quantity=item_details['quantity'],
+                    price=item_details['price']
+                )
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'message': '주문이 성공적으로 완료되었습니다.'})
+
+            messages.success(request, '주문이 성공적으로 완료되었습니다.')
+            return redirect('main')
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'message': '장바구니가 비어 있습니다.'}, status=400)
+
+            messages.error(request, '장바구니가 비어 있습니다.')
+
+    return redirect('ja_menu')
+
+def en_checkout(request):
+    if request.method == 'POST':
+        cart_items = request.POST.getlist('cart_items')
+        total_price = request.POST.get('total_price')
+        order_type = request.POST.get('order_type', 'eat_in')
+        payment_type = request.POST.get('payment_type')
+        seat_id = request.POST.get('seat_id')  # 추가된 좌석 정보
+
+        if cart_items:
+            new_order = Order(total_price=total_price, is_completed=False, order_type=order_type, payment_type=payment_type)
+            if seat_id:
+                seat = Seat.objects.get(seat_id=seat_id)
+                new_order.seat = seat  # 주문에 좌석 정보 추가
+                seat.is_available = False
+                seat.save()
+            new_order.save()
+
+            for item_data in cart_items:
+                item_details = json.loads(item_data)
+                item = Item.objects.get(item_name_en=item_details['name'])
+                OrderItem.objects.create(
+                    order=new_order,
+                    item=item,
+                    temperature=item_details['temperature'],
+                    size=item_details['size'],
+                    quantity=item_details['quantity'],
+                    price=item_details['price']
+                )
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'message': '주문이 성공적으로 완료되었습니다.'})
+
+            messages.success(request, '주문이 성공적으로 완료되었습니다.')
+            return redirect('main')
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'message': '장바구니가 비어 있습니다.'}, status=400)
+
+            messages.error(request, '장바구니가 비어 있습니다.')
+
+    return redirect('en_menu')
+
+def zh_checkout(request):
+    if request.method == 'POST':
+        cart_items = request.POST.getlist('cart_items')
+        total_price = request.POST.get('total_price')
+        order_type = request.POST.get('order_type', 'eat_in')
+        payment_type = request.POST.get('payment_type')
+        seat_id = request.POST.get('seat_id')  # 추가된 좌석 정보
+
+        if cart_items:
+            new_order = Order(total_price=total_price, is_completed=False, order_type=order_type, payment_type=payment_type)
+            if seat_id:
+                seat = Seat.objects.get(seat_id=seat_id)
+                new_order.seat = seat  # 주문에 좌석 정보 추가
+                seat.is_available = False
+                seat.save()
+            new_order.save()
+
+            for item_data in cart_items:
+                item_details = json.loads(item_data)
+                item = Item.objects.get(item_name_zh=item_details['name'])
+                OrderItem.objects.create(
+                    order=new_order,
+                    item=item,
+                    temperature=item_details['temperature'],
+                    size=item_details['size'],
+                    quantity=item_details['quantity'],
+                    price=item_details['price']
+                )
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'message': '주문이 성공적으로 완료되었습니다.'})
+
+            messages.success(request, '주문이 성공적으로 완료되었습니다.')
+            return redirect('main')
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'message': '장바구니가 비어 있습니다.'}, status=400)
+
+            messages.error(request, '장바구니가 비어 있습니다.')
+
+    return redirect('zh_menu')
 
 @csrf_exempt
 def payment(request):
@@ -429,7 +700,7 @@ def payment(request):
                 'order_type': order_type,
             }
             return render(request, 'user_pages/payment.html', context)
-    return redirect('menu')
+    return redirect('ko_menu')
 
 @csrf_exempt
 def payment_complete(request):
@@ -452,7 +723,6 @@ def payment_complete(request):
                 OrderItem.objects.create(
                     order=new_order,
                     item=item,
-                    cup_type=item_details['container'],
                     temperature=item_details['temperature'],
                     size=item_details['size'],
                     quantity=item_details['quantity'],

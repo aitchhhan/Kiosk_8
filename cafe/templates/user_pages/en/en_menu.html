@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAFE KIOSK</title>
+    <link rel="stylesheet" href="{% static 'css/menu.css' %}">
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
+    <script>
+        var IMP = window.IMP; 
+        IMP.init("imp53883146");
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuButtons = document.querySelectorAll('.menu-categories li a');
+            const menuItems = document.querySelectorAll('.menu-items .category');
+            const itemModal = document.getElementById('itemModal');
+            const closeModal = document.querySelectorAll('.modal .close');
+            const checkoutButton = document.querySelector('.checkout-button');
+            const itemForm = document.getElementById('itemForm');
+
+            let selectedItem = null;
+            let selectedSeat = null;
+
+            // Checkout button click handling
+            checkoutButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                const orderType = document.querySelector('input[name="order_type"]').value;
+                if (orderType === 'take_out') {
+                    updateCartItemsInput();
+                    requestPay(null);
+                } else {
+                    document.getElementById('seatSelectionModal').style.display = 'block';
+                }
+            });
+
+            // Close modal handling
+            closeModal.forEach(button => {
+                button.addEventListener('click', function() {
+                    this.closest('.modal').style.display = 'none';
+                });
+            });
+
+            window.addEventListener('click', function(event) {
+                if (event.target == itemModal) {
+                    itemModal.style.display = 'none';
+                }
+            });
+
+            itemForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const formData = new FormData(itemForm);
+                const itemDetails = {
+                    name: selectedItem.name,
+                    price: selectedItem.price,
+                    temperature: formData.get('temperature'),
+                    size: formData.get('size'),
+                    quantity: parseInt(formData.get('quantity'))
+                };
+
+                addItemToCart(itemDetails);
+                itemModal.style.display = 'none';
+                itemForm.reset();
+            });
+
+            menuButtons.forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    menuButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    const category = button.getAttribute('href').replace('#', '');
+                    menuItems.forEach(item => {
+                        if (item.classList.contains(category)) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            document.querySelectorAll('.stampBtn').forEach(button => {
+                button.addEventListener('click', function() {
+                    selectedItem = {
+                        name: this.dataset.name,
+                        price: this.dataset.price
+                    };
+                    itemModal.style.display = 'block';
+                });
+            });
+
+            function addItemToCart(item) {
+                const cart = document.querySelector('.cart ul');
+                const cartItem = document.createElement('li');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
+                    <div class="item-info">
+                        <h3>${item.name} (${item.temperature}, ${item.size})</h3>
+                        <span class="quantity">x<span class="item-quantity">${item.quantity}</span></span>
+                        <span class="price">${item.price * item.quantity}₩</span>
+                    </div>
+                    <div class="cart-controls">
+                        <button class="increaseBtn">+</button>
+                        <button class="decreaseBtn">-</button>
+                        <button class="removeBtn">X</button>
+                    </div>
+                `;
+                cart.appendChild(cartItem);
+
+                const increaseBtn = cartItem.querySelector('.increaseBtn');
+                const decreaseBtn = cartItem.querySelector('.decreaseBtn');
+                const removeBtn = cartItem.querySelector('.removeBtn');
+
+                updateDecreaseButton(decreaseBtn, item.quantity);
+
+                increaseBtn.addEventListener('click', function() {
+                    item.quantity += 1;
+                    updateCartItem(cartItem, item);
+                });
+
+                decreaseBtn.addEventListener('click', function() {
+                    if (item.quantity > 1) {
+                        item.quantity -= 1;
+                        updateCartItem(cartItem, item);
+                    }
+                });
+
+                removeBtn.addEventListener('click', function() {
+                    cartItem.remove();
+                    updateTotal();
+                });
+
+                updateTotal();
+            }
+
+            function updateCartItem(cartItem, item) {
+                cartItem.querySelector('.item-quantity').textContent = item.quantity;
+                cartItem.querySelector('.price').textContent = `${item.price * item.quantity}₩`;
+                updateDecreaseButton(cartItem.querySelector('.decreaseBtn'), item.quantity);
+                updateTotal();
+            }
+
+            function updateDecreaseButton(button, quantity) {
+                if (quantity <= 1) {
+                    button.disabled = true;
+                } else {
+                    button.disabled = false;
+                }
+            }
+
+            function updateTotal() {
+                const cartItems = document.querySelectorAll('.cart .cart-item');
+                let total = 0;
+                cartItems.forEach(item => {
+                    const price = parseInt(item.querySelector('.price').textContent.replace('₩', ''));
+                    total += price;
+                });
+                document.querySelector('.cart .total .price').textContent = `${total}₩`;
+                document.getElementById('totalPrice').value = total;
+            }
+
+            function updateCartItemsInput() {
+                const cartItems = document.querySelectorAll('.cart .cart-item');
+                const cartItemsContainer = document.getElementById('cartItemsContainer');
+                cartItemsContainer.innerHTML = '';
+            
+                cartItems.forEach(cartItem => {
+                    const itemInfo = {};
+            
+                    const h3Element = cartItem.querySelector('h3');
+                    const itemQuantityElement = cartItem.querySelector('.item-quantity');
+                    const itemPriceElement = cartItem.querySelector('.price');
+            
+                    if (h3Element && itemQuantityElement && itemPriceElement) {
+                        const h3Content = h3Element.textContent;
+                        const itemQuantity = parseInt(itemQuantityElement.textContent);
+                        const itemPrice = parseInt(itemPriceElement.textContent.replace('₩', ''));
+            
+                        // 정규 표현식을 사용하여 항목 정보 추출
+                        const nameMatch = h3Content.match(/^(\S+)/);
+                        const temperatureMatch = h3Content.match(/\(([^,]+),/);
+                        const sizeMatch = h3Content.match(/,\s*([^,]+)\)/);
+            
+                        itemInfo.name = nameMatch ? nameMatch[1] : '';
+                        itemInfo.temperature = temperatureMatch ? temperatureMatch[1].trim() : '';
+                        itemInfo.size = sizeMatch ? sizeMatch[1].trim() : '';
+                        itemInfo.quantity = itemQuantity || 0;
+                        itemInfo.price = itemPrice / itemQuantity || 0;
+            
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'cart_items';
+                        input.value = JSON.stringify(itemInfo);
+                        cartItemsContainer.appendChild(input);
+                    }
+                });
+            }
+            
+
+            document.getElementById('selectSeatBtn').addEventListener('click', function() {
+                document.getElementById('seatSelectionModal').style.display = 'none';
+                document.getElementById('seatModal').style.display = 'block';
+            });
+
+            document.getElementById('skipSeatBtn').addEventListener('click', function() {
+                document.getElementById('seatSelectionModal').style.display = 'none';
+                updateCartItemsInput();
+                requestPay(null);
+            });
+
+            document.querySelectorAll('.seat-item.available').forEach(function(seatItem) {
+                seatItem.addEventListener('click', function() {
+                    document.querySelectorAll('.seat-item').forEach(function(item) {
+                        item.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    selectedSeat = this.getAttribute('data-seat-id');
+                });
+            });            
+
+            document.getElementById('confirmSeatBtn').addEventListener('click', function() {
+                if (selectedSeat) {
+                    document.getElementById('seatModal').style.display = 'none';
+                    updateCartItemsInput();
+                    requestPay(selectedSeat);
+                } else {
+                    alert('Please select a seat.');
+                }
+            });
+
+            function requestPay(seatId) {
+                const total = document.getElementById('totalPrice').value;
+                const makeMerchantUid = Date.now().toString();
+                const cartItems = document.querySelectorAll('.cart .cart-item');
+                let itemNames = [];
+                cartItems.forEach(cartItem => {
+                    const itemName = cartItem.querySelector('h3').textContent.split(' ')[0];
+                    itemNames.push(itemName);
+                });
+                const itemNamesString = itemNames.join(', ');
+
+                IMP.request_pay({
+                    pg : 'kcp',
+                    pay_method : 'card',
+                    merchant_uid: "IMP" + makeMerchantUid,
+                    name : `Order: ${itemNamesString}`,
+                    amount : total,
+                    buyer_email : 'iamport@chai.finance',
+                    buyer_name : 'IAMPORT Tech Support',
+                    buyer_tel : '010-1234-5678',
+                    buyer_addr : 'Gangnam-gu, Seoul',
+                    buyer_postcode : '123-456'
+                }, function (rsp) { 
+                    if (rsp.success) {
+                        alert('Payment completed.');
+                        if (seatId) {
+                            const seatInput = document.createElement('input');
+                            seatInput.type = 'hidden';
+                            seatInput.name = 'seat_id';
+                            seatInput.value = seatId;
+                            document.getElementById('checkoutForm').appendChild(seatInput);
+                        }
+                        // After payment, open the stamp accumulation modal.
+                        openStampModal();
+                    } else {
+                        alert('Payment failed. ' + rsp.error_msg);
+                    }
+                });
+            }
+
+            // Stamp accumulation modal
+            function openStampModal() {
+                document.getElementById('orderCompleteModal').style.display = "block";
+            }
+
+            function closeStampModal() {
+                document.getElementById('orderCompleteModal').style.display = "none";
+            }
+
+            function appendNumber(number) {
+                document.getElementById('phoneNumber').value += number;
+            }
+
+            function clearNumber() {
+                document.getElementById('phoneNumber').value = '';
+            }
+
+            function submitPhoneNumber() {
+                var phoneNumber = document.getElementById('phoneNumber').value;
+                if (phoneNumber) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', '{% url "add_stamp" %}', true);
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+
+                    xhr.onload = function() {
+                        var response = JSON.parse(xhr.responseText);
+                        alert(response.message);
+                        if (xhr.status === 200) {
+                            closeStampModal();
+                            // After the order is completed, submit the checkoutForm.
+                            document.getElementById('checkoutForm').submit();
+                        } else {
+                            // Display an error message to the user.
+                            alert(response.message);
+                        }
+                    };
+
+                    xhr.send('phone_number=' + phoneNumber);
+                } else {
+                    alert('Please enter a phone number.');
+                }
+            }
+
+            // Add event listeners.
+            document.querySelectorAll('.numpad button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const value = this.textContent;
+                    if (value === 'Clear') {
+                        clearNumber();
+                    } else if (value === 'OK') {
+                        submitPhoneNumber();
+                    } else {
+                        appendNumber(value);
+                    }
+                });
+            });
+
+            // Close the stamp modal when the user clicks on <span> (x)
+            document.querySelectorAll('#orderCompleteModal .close').forEach(function(closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    closeStampModal();
+                });
+            });
+
+            document.getElementById('skipStampBtn').addEventListener('click', function() {
+                closeStampModal();
+                document.getElementById('checkoutForm').submit();
+            });
+
+            // Ensure the modal doesn't close immediately after opening
+            setTimeout(function() {
+                if (document.getElementById('orderCompleteModal').style.display === "block") {
+                    document.getElementById('orderCompleteModal').style.display = "block";
+                }
+            }, 100);
+        });
+    </script>
+    <style>
+        h1 a {
+            color: inherit;
+            text-decoration: none;
+        }
+        h1 a:visited,
+        h1 a:hover,
+        h1 a:active {
+            color: inherit;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            position: relative;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 10px;
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .back-button a {
+            text-decoration: none;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .back-button a:visited,
+        .back-button a:hover,
+        .back-button a:focus {
+            color: #fff;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .increaseBtn,
+        .decreaseBtn,
+        .removeBtn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .increaseBtn:hover,
+        .decreaseBtn:hover,
+        .removeBtn:hover {
+            background-color: #d32f2f;
+        }
+
+        .increaseBtn:disabled,
+        .decreaseBtn:disabled {
+            background-color: #ddd;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .cart-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .seat-selection-container {
+            display: grid;
+            grid-template-columns: repeat(7, 50px);
+            grid-template-rows: repeat(6, 50px);
+            gap: 5px;
+        }
+
+        .seat-item {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+        }
+
+        .available {
+            background-color: green;
+        }
+
+        .unavailable {
+            background-color: red;
+        }
+
+        .selected {
+            background-color: blue !important;
+            border: 2px solid blue;
+        }
+
+        .cart button[type="submit"],
+        #itemModal button[type="submit"] {
+            background-color: black;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .cart button[type="submit"]:hover,
+        #itemModal button[type="submit"]:hover {
+            background-color: #333;
+        }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .numpad button {
+            padding: 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .skip-button {
+            margin-top: 10px;
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .skip-button:hover {
+            background-color: #b71c1c;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <button class="back-button"><a href='{% url 'main' %}'>&larr;</a></button>
+        <h1>
+            <a href='{% url 'main' %}'>CAFE KIOSK</a>
+        </h1>   
+    </header>
+    <main>
+        <section class="menu-categories">
+            <h2>Categories</h2>
+            <ul>   
+                <li><a href="#coffee" class="active">Coffee</a></li>
+                <li><a href="#decaffein">Decaffeinated</a></li>
+                <li><a href="#tea_ade">Tea/Ade</a></li>
+                <li><a href="#dessert">Dessert</a></li>
+            </ul>
+        </section>
+
+        <section class="menu-items">
+            <h2>Menu Items</h2>
+            <div class="category coffee">
+                {% for item in items %}
+                    {% if item.category == 'coffee' %}
+                        <button class="stampBtn" data-name="{{ item.item_name_en }}" data-price="{{ item.item_price }}">
+                            <img src="{{ item.item_image.url }}" alt="Image" width="100" height="100">
+                            <div>{{ item.item_name_en }}</div>
+                            <div>{{ item.item_price }}₩</div>
+                        </button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="category decaffein" style="display:none;">
+                {% for item in items %}
+                    {% if item.category == 'decaffein' %}
+                        <button class="stampBtn" data-name="{{ item.item_name_en }}" data-price="{{ item.item_price }}">
+                            <img src="{{ item.item_image.url }}" alt="Image" width="100" height="100">
+                            <div>{{ item.item_name_en }}</div>
+                            <div>{{ item.item_price }}₩</div>
+                        </button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="category tea_ade" style="display:none;">
+                {% for item in items %}
+                    {% if item.category == 'tea_ade' %}
+                        <button class="stampBtn" data-name="{{ item.item_name_en }}" data-price="{{ item.item_price }}">
+                            <img src="{{ item.item_image.url }}" alt="Image" width="100" height="100">
+                            <div>{{ item.item_name_en }}</div>
+                            <div>{{ item.item_price }}₩</div>
+                        </button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="category dessert" style="display:none;">
+                {% for item in items %}
+                    {% if item.category == 'dessert' %}
+                        <button class="stampBtn" data-name="{{ item.item_name_en }}" data-price="{{ item.item_price }}">
+                            <img src="{{ item.item_image.url }}" alt="Image" width="100" height="100">
+                            <div>{{ item.item_name_en }}</div>
+                            <div>{{ item.item_price }}₩</div>
+                        </button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="cart">
+            <h2>Cart</h2>
+            <ul>
+                <!-- 기존 기본 장바구니 항목을 제거합니다 -->
+            </ul>
+            <div class="total">
+                <span>Total:</span>
+                <span class="price">0₩</span>
+            </div>
+            <form id="checkoutForm" action="{% url 'en_checkout' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="total_price" id="totalPrice" value="0">
+                <input type="hidden" name="order_type" value="{{ order_type }}">
+                <input type="hidden" name="payment_type" id="paymentType" value="card">
+                <div id="cartItemsContainer"></div>
+                <button type="button" class="checkout-button">Checkout</button>
+            </form>                               
+        </section>
+    </main>
+
+    <!-- Seat selection confirmation modal -->
+    <div id="seatSelectionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeSeatSelectionModal">&times;</span>
+            <h2>Would you like to select a seat?</h2>
+            <button id="selectSeatBtn">Select Seat</button>
+            <button id="skipSeatBtn">Skip</button>
+        </div>
+    </div>
+
+    <!-- Seat selection modal -->
+    <div id="seatModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeSeatModal">&times;</span>
+            <h2>Select Seat</h2>
+            <div class="seat-selection-container">
+                {% for seat in seats %}
+                    <div class="seat-item {% if seat.is_available %}available{% else %}unavailable{% endif %}" 
+                         data-seat-id="{{ seat.seat_id }}" 
+                         style="grid-row: {{ seat.row }}; grid-column: {{ seat.column }};">
+                        {{ seat.seat_id }}
+                    </div>
+                {% endfor %}
+            </div>
+            <button id="confirmSeatBtn">Confirm</button>
+        </div>
+    </div>
+
+    <!-- Order details selection modal -->
+    <div id="itemModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Details</h2>
+            <form id="itemForm">
+                <div>
+                    <label>Temperature:</label>
+                    <select name="temperature" required>
+                        <option value="Hot">Hot</option>
+                        <option value="Ice">Ice</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Size:</label>
+                    <select name="size" required>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Quantity:</label>
+                    <input type="number" name="quantity" min="1" value="1" required>
+                </div>
+                <button type="submit">Add to Cart</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Stamp accumulation modal -->
+    <div id="orderCompleteModal" class="modal">
+        <div class="modal-content">
+            <h2>Stamp Accumulation</h2>
+            <p>Would you like to accumulate stamps by entering your phone number?</p>
+            <input type="text" id="phoneNumber" class="input-field" readonly>
+            <div class="numpad">
+                <button>1</button>
+                <button>2</button>
+                <button>3</button>
+                <button>4</button>
+                <button>5</button>
+                <button>6</button>
+                <button>7</button>
+                <button>8</button>
+                <button>9</button>
+                <button>0</button>
+                <button>Clear</button>
+                <button>OK</button>
+            </div>
+            <button id="skipStampBtn" class="skip-button">Do Not Accumulate</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; Team8</p>
+    </footer>
+</body>
+</html>

@@ -4,12 +4,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', index, name='index'),
+    path('', main, name='main'),
     # manager_pages
     path('manager/', manager, name='manager'),
     path('manager/menu_manage/', menu_manage, name='menu_manage'),
     path('manager/menu_list/', menu_list, name='menu_list'),
-    path('manager/manager_login/', manager_login, name='manager_login'),
+    path('manager_login/', manager_login, name='manager_login'),
     path('manager/manager_logout/', manager_logout, name='manager_logout'),
     path('manager/add_item/', add_item, name='add_item'),
     path('manager/edit_item/<int:item_id>', edit_item, name='edit_item'),
@@ -22,8 +22,18 @@ urlpatterns = [
 
     
     # user_pages
-    path('menu/', menu, name='menu'),
-    path('checkout/', checkout, name='checkout'),
+    path('ko_menu/', ko_menu, name='ko_menu'),
+    path('en_menu/', en_menu, name='en_menu'),
+    path('ja_menu/', ja_menu, name='ja_menu'),
+    path('zh_menu/', zh_menu, name='zh_menu'),
+    path('ko_order_type/', ko_order_type, name='ko_order_type'),
+    path('en_order_type/', en_order_type, name='en_order_type'),
+    path('ja_order_type/', ja_order_type, name='ja_order_type'),
+    path('zh_order_type/', zh_order_type, name='zh_order_type'),
+    path('ko_checkout/', ko_checkout, name='ko_checkout'),
+    path('ja_checkout/', ja_checkout, name='ja_checkout'),
+    path('en_checkout/', en_checkout, name='en_checkout'),
+    path('zh_checkout/', zh_checkout, name='zh_checkout'),
     path('order_list/', order_list, name='order_list'),
     path('cancel_order/', cancel_order, name='cancel_order'),
     path('complete_order/', complete_order, name='complete_order'),

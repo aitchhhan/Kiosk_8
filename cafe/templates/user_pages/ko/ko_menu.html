@@ -54,7 +54,6 @@
                 const itemDetails = {
                     name: selectedItem.name,
                     price: selectedItem.price,
-                    container: formData.get('container'),
                     temperature: formData.get('temperature'),
                     size: formData.get('size'),
                     quantity: parseInt(formData.get('quantity'))
@@ -98,9 +97,9 @@
                 cartItem.className = 'cart-item';
                 cartItem.innerHTML = `
                     <div class="item-info">
-                        <h3>${item.name} (${item.container}, ${item.temperature}, ${item.size})</h3>
+                        <h3>${item.name} (${item.temperature}, ${item.size})</h3>
                         <span class="quantity">x<span class="item-quantity">${item.quantity}</span></span>
-                        <span class="price">${item.price * item.quantity}원</span>
+                        <span class="price">${item.price * item.quantity}₩</span>
                     </div>
                     <div class="cart-controls">
                         <button class="increaseBtn">+</button>
@@ -138,7 +137,7 @@
 
             function updateCartItem(cartItem, item) {
                 cartItem.querySelector('.item-quantity').textContent = item.quantity;
-                cartItem.querySelector('.price').textContent = `${item.price * item.quantity}원`;
+                cartItem.querySelector('.price').textContent = `${item.price * item.quantity}₩`;
                 updateDecreaseButton(cartItem.querySelector('.decreaseBtn'), item.quantity);
                 updateTotal();
             }
@@ -155,10 +154,10 @@
                 const cartItems = document.querySelectorAll('.cart .cart-item');
                 let total = 0;
                 cartItems.forEach(item => {
-                    const price = parseInt(item.querySelector('.price').textContent.replace('원', ''));
+                    const price = parseInt(item.querySelector('.price').textContent.replace('₩', ''));
                     total += price;
                 });
-                document.querySelector('.cart .total .price').textContent = `${total}원`;
+                document.querySelector('.cart .total .price').textContent = `${total}₩`;
                 document.getElementById('totalPrice').value = total;
             }
 
@@ -166,24 +165,39 @@
                 const cartItems = document.querySelectorAll('.cart .cart-item');
                 const cartItemsContainer = document.getElementById('cartItemsContainer');
                 cartItemsContainer.innerHTML = '';
-
+            
                 cartItems.forEach(cartItem => {
-                    const itemInfo = {
-                        name: cartItem.querySelector('h3').textContent.split(' ')[0],
-                        container: cartItem.querySelector('h3').textContent.split('(')[1].split(',')[0],
-                        temperature: cartItem.querySelector('h3').textContent.split(',')[1].trim(),
-                        size: cartItem.querySelector('h3').textContent.split(',')[2].split(')')[0].trim(),
-                        quantity: parseInt(cartItem.querySelector('.item-quantity').textContent),
-                        price: parseInt(cartItem.querySelector('.price').textContent.replace('원', '')) / parseInt(cartItem.querySelector('.item-quantity').textContent)
-                    };
-
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'cart_items';
-                    input.value = JSON.stringify(itemInfo);
-                    cartItemsContainer.appendChild(input);
+                    const itemInfo = {};
+            
+                    const h3Element = cartItem.querySelector('h3');
+                    const itemQuantityElement = cartItem.querySelector('.item-quantity');
+                    const itemPriceElement = cartItem.querySelector('.price');
+            
+                    if (h3Element && itemQuantityElement && itemPriceElement) {
+                        const h3Content = h3Element.textContent;
+                        const itemQuantity = parseInt(itemQuantityElement.textContent);
+                        const itemPrice = parseInt(itemPriceElement.textContent.replace('₩', ''));
+            
+                        // 정규 표현식을 사용하여 항목 정보 추출
+                        const nameMatch = h3Content.match(/^(\S+)/);
+                        const temperatureMatch = h3Content.match(/\(([^,]+),/);
+                        const sizeMatch = h3Content.match(/,\s*([^,]+)\)/);
+            
+                        itemInfo.name = nameMatch ? nameMatch[1] : '';
+                        itemInfo.temperature = temperatureMatch ? temperatureMatch[1].trim() : '';
+                        itemInfo.size = sizeMatch ? sizeMatch[1].trim() : '';
+                        itemInfo.quantity = itemQuantity || 0;
+                        itemInfo.price = itemPrice / itemQuantity || 0;
+            
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'cart_items';
+                        input.value = JSON.stringify(itemInfo);
+                        cartItemsContainer.appendChild(input);
+                    }
                 });
             }
+            
 
             document.getElementById('selectSeatBtn').addEventListener('click', function() {
                 document.getElementById('seatSelectionModal').style.display = 'none';
@@ -526,9 +540,9 @@
 </head>
 <body>
     <header class="header">
-        <button class="back-button"><a href='{% url 'index' %}'>&larr;</a></button>
+        <button class="back-button"><a href='{% url 'main' %}'>&larr;</a></button>
         <h1>
-            <a href='{% url 'index' %}'>CAFE KIOSK</a>
+            <a href='{% url 'main' %}'>CAFE KIOSK</a>
         </h1>   
     </header>
     <main>
@@ -547,10 +561,10 @@
             <div class="category coffee">
                 {% for item in items %}
                     {% if item.category == 'coffee' %}
-                        <button class="stampBtn" data-name="{{ item.item_name }}" data-price="{{ item.item_price }}">
+                        <button class="stampBtn" data-name="{{ item.item_name_ko }}" data-price="{{ item.item_price }}">
                             <img src="{{ item.item_image.url }}" alt="수집 이미지" width="100" height="100">
-                            <div>{{ item.item_name }}</div>
-                            <div>{{ item.item_price }}원</div>
+                            <div>{{ item.item_name_ko }}</div>
+                            <div>{{ item.item_price }}₩</div>
                         </button>
                     {% endif %}
                 {% endfor %}
@@ -558,10 +572,10 @@
             <div class="category decaffein" style="display:none;">
                 {% for item in items %}
                     {% if item.category == 'decaffein' %}
-                        <button class="stampBtn" data-name="{{ item.item_name }}" data-price="{{ item.item_price }}">
+                        <button class="stampBtn" data-name="{{ item.item_name_ko }}" data-price="{{ item.item_price }}">
                             <img src="{{ item.item_image.url }}" alt="수집 이미지" width="100" height="100">
-                            <div>{{ item.item_name }}</div>
-                            <div>{{ item.item_price }}원</div>
+                            <div>{{ item.item_name_ko }}</div>
+                            <div>{{ item.item_price }}₩</div>
                         </button>
                     {% endif %}
                 {% endfor %}
@@ -569,10 +583,10 @@
             <div class="category tea_ade" style="display:none;">
                 {% for item in items %}
                     {% if item.category == 'tea_ade' %}
-                        <button class="stampBtn" data-name="{{ item.item_name }}" data-price="{{ item.item_price }}">
+                        <button class="stampBtn" data-name="{{ item.item_name_ko }}" data-price="{{ item.item_price }}">
                             <img src="{{ item.item_image.url }}" alt="수집 이미지" width="100" height="100">
-                            <div>{{ item.item_name }}</div>
-                            <div>{{ item.item_price }}원</div>
+                            <div>{{ item.item_name_ko }}</div>
+                            <div>{{ item.item_price }}₩</div>
                         </button>
                     {% endif %}
                 {% endfor %}
@@ -580,10 +594,10 @@
             <div class="category dessert" style="display:none;">
                 {% for item in items %}
                     {% if item.category == 'dessert' %}
-                        <button class="stampBtn" data-name="{{ item.item_name }}" data-price="{{ item.item_price }}">
+                        <button class="stampBtn" data-name="{{ item.item_name_ko }}" data-price="{{ item.item_price }}">
                             <img src="{{ item.item_image.url }}" alt="수집 이미지" width="100" height="100">
-                            <div>{{ item.item_name }}</div>
-                            <div>{{ item.item_price }}원</div>
+                            <div>{{ item.item_name_ko }}</div>
+                            <div>{{ item.item_price }}₩</div>
                         </button>
                     {% endif %}
                 {% endfor %}
@@ -597,9 +611,9 @@
             </ul>
             <div class="total">
                 <span>총 금액:</span>
-                <span class="price">0원</span>
+                <span class="price">0₩</span>
             </div>
-            <form id="checkoutForm" action="{% url 'checkout' %}" method="post">
+            <form id="checkoutForm" action="{% url 'ko_checkout' %}" method="post">
                 {% csrf_token %}
                 <input type="hidden" name="total_price" id="totalPrice" value="0">
                 <input type="hidden" name="order_type" value="{{ order_type }}">
@@ -645,17 +659,10 @@
             <h2>상세선택</h2>
             <form id="itemForm">
                 <div>
-                    <label>컵 종류:</label>
-                    <select name="container" required>
-                        <option value="일회용">일회용</option>
-                        <option value="텀블러">텀블러</option>
-                    </select>
-                </div>
-                <div>
                     <label>온도:</label>
                     <select name="temperature" required>
-                        <option value="핫">핫</option>
-                        <option value="아이스">아이스</option>
+                        <option value="HOT">핫</option>
+                        <option value="ICE">아이스</option>
                     </select>
                 </div>
                 <div>

@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manager Page</title>
-    {% comment %} <link rel="stylesheet" href={% static "css/manager.css" %}> {% endcomment %}
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -154,22 +153,22 @@
 <body>
     <div class="container">
         <header>
-            <h1>Manager Page</h1>
+            <h1>언어선택<br>Language Selection<br>言語<br>语言选择</h1>
         </header>
-        <button id="adminLogoutBtn">
-            <a href="{% url 'manager_logout' %}">로그아웃</a>
-        </button>
         <main>
             <div class="buttons">
                 <button id="menuManageBtn">
-                    <a href="{% url 'menu_list' %}">메뉴관리</a> 
+                    <a href="{% url 'ko_order_type' %}">한국어</a> 
                 </button>
                 <button id="orderManageBtn">
-                    <a href="{% url 'order_list' %}">주문관리</a>
+                    <a href="{% url 'en_order_type' %}">English</a>
                 </button>
                 <button id="orderManageBtn">
-                    <a href="{% url 'manage_seats' %}">좌석관리</a>
+                    <a href="{% url 'ja_order_type' %}">日本語</a>
                 </button>
+                <button id="orderManageBtn">
+                  <a href="{% url 'zh_order_type' %}">中文</a>
+              </button>
             </div>
         </main>
     </div>

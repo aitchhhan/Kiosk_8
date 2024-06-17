@@ -190,14 +190,14 @@
                     <p>좌석: {% if order.seat %}{{ order.seat.seat_id }}{% else %}선택하지 않음{% endif %}</p>
                     <ul>
                         {% for item in order.orderitem_set.all %}
-                            <li>{{ item.item.item_name }} ({{ item.cup_type }}, {{ item.temperature }}, {{ item.size }}) x{{ item.quantity }} - {{ item.price }}원</li>
+                            <li>{{ item.item.item_name_ko }} ({{ item.temperature }}, {{ item.size }}) x {{ item.quantity }} - {{ item.price }}원</li>
                         {% endfor %}
                     </ul>
                     <button class="btn complete" onclick="completeOrder('{{ order.order_number }}')">완료</button>
                     <button class="btn" onclick="cancelOrder('{{ order.order_number }}')">취소</button>
                 </li>
                 {% endfor %}
-            </ul>
+            </ul>            
             {% else %}
                 <p>주문이 없습니다.</p>
             {% endif %}
