@@ -100,10 +100,9 @@
     </style>
 </head>
 <body>
-
     <header class="header">
         <button class="back-button"><a href='{% url "menu_list" %}'>&larr;</a></button>
-        <h1>몌뉴 추가</h1>
+        <h1>메뉴 추가</h1>
     </header>
 
     <div class="container">
@@ -115,25 +114,37 @@
                 <select id="category" name="category" required>
                     <option value="">-- 카테고리를 선택하세요 --</option>
                     <option value="coffee">Coffee</option>
-                    <option value="tea_aid">Tea_Aid</option>
                     <option value="decaffein">Decaffein</option>
+                    <option value="tea_ade">Tea / Ade</option>
                     <option value="dessert">Dessert</option>
                 </select>
             </div>
             <div>
-                <label for="item_name">메뉴 이름:</label>
-                <input type="text" id="item_name" name="item_name" required>
+                <label for="item_name_ko">메뉴 이름 (한국어):</label>
+                <input type="text" id="item_name_ko" name="item_name_ko" required>
             </div>
             <div>
-                <label for="item_price">몌뉴 가격:</label>
+                <label for="item_name_en">메뉴 이름 (영어):</label>
+                <input type="text" id="item_name_en" name="item_name_en" required>
+            </div>
+            <div>
+                <label for="item_name_ja">메뉴 이름 (일본어):</label>
+                <input type="text" id="item_name_ja" name="item_name_ja" required>
+            </div>
+            <div>
+                <label for="item_name_zh">메뉴 이름 (중국어):</label>
+                <input type="text" id="item_name_zh" name="item_name_zh" required>
+            </div>
+            <div>
+                <label for="item_price">메뉴 가격:</label>
                 <input type="number" id="item_price" name="item_price" required>
             </div>
             <div>
-                <label for="item_image">몌뉴 이미지:</label>
+                <label for="item_image">메뉴 이미지:</label>
                 <input type="file" id="item_image" name="item_image" accept="image/*" required>
             </div>
             <div class="button">
-                <button type="submit" class="submit" name="action" value="save" id="saveButton">몌뉴 추가</button>
+                <button type="submit" class="submit" name="action" value="save" id="saveButton">메뉴 추가</button>
             </div>
         </form>
     </div>

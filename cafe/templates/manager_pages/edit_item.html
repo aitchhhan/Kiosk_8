@@ -92,6 +92,7 @@
             cursor: pointer;
             border-radius: 4px;
             font-size: 16px;
+            margin: 0 5px;
         }
 
         .button button:hover {
@@ -119,14 +120,26 @@
                 <select id="category" name="category" required>
                     <option value="">-- 카테고리를 선택하세요 --</option>
                     <option value="coffee" {% if item.category == 'coffee' %}selected{% endif %}>Coffee</option>
-                    <option value="tea_ade" {% if item.category == 'tea_ade' %}selected{% endif %}>Tea / Ade</option>
                     <option value="decaffein" {% if item.category == 'decaffein' %}selected{% endif %}>Decaffein</option>
+                    <option value="tea_ade" {% if item.category == 'tea_ade' %}selected{% endif %}>Tea / Ade</option>
                     <option value="dessert" {% if item.category == 'dessert' %}selected{% endif %}>Dessert</option>
                 </select>
             </div>
             <div>
-                <label for="item_name">메뉴 이름:</label>
-                <input type="text" id="item_name" name="item_name" value="{{ item.item_name }}" required>
+                <label for="item_name_ko">메뉴 이름 (한국어):</label>
+                <input type="text" id="item_name_ko" name="item_name_ko" value="{{ item.item_name_ko }}" required>
+            </div>
+            <div>
+                <label for="item_name_en">메뉴 이름 (영어):</label>
+                <input type="text" id="item_name_en" name="item_name_en" value="{{ item.item_name_en }}" required>
+            </div>
+            <div>
+                <label for="item_name_ja">메뉴 이름 (일본어):</label>
+                <input type="text" id="item_name_ja" name="item_name_ja" value="{{ item.item_name_ja }}" required>
+            </div>
+            <div>
+                <label for="item_name_zh">메뉴 이름 (중국어):</label>
+                <input type="text" id="item_name_zh" name="item_name_zh" value="{{ item.item_name_zh }}" required>
             </div>
             <div>
                 <label for="item_price">메뉴 가격:</label>
@@ -137,7 +150,7 @@
                 <input type="file" id="item_image" name="item_image" accept="image/*">
                 {% if item.item_image %}
                     <br>
-                    <img src="{{ item.item_image.url }}" alt="{{ item.item_name }}" width="100"><br>
+                    <img src="{{ item.item_image.url }}" alt="{{ item.item_name_ko }}" width="100"><br>
                 {% endif %}
             </div>
             <div class="button">

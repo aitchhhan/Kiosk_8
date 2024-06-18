@@ -37,11 +37,11 @@ button {
 }
 
 #eatInBtn {
-  width: 400px; /* 버튼 너비 조절 */
-  height: 400px; /* 버튼 높이 조절 */
+  width: 400px; 
+  height: 400px; 
 }
 
 #takeOutBtn {
-  width: 400px; /* 버튼 너비 조절 */
-  height: 400px; /* 버튼 높이 조절 */
+  width: 400px; 
+  height: 400px; 
 }

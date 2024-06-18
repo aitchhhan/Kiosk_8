@@ -19,13 +19,16 @@
             const closeModal = document.querySelectorAll('.modal .close');
             const checkoutButton = document.querySelector('.checkout-button');
             const itemForm = document.getElementById('itemForm');
-
+        
             let selectedItem = null;
             let selectedSeat = null;
-
-            // Checkout button click handling
+        
             checkoutButton.addEventListener('click', function(event) {
                 event.preventDefault();
+                if (isCartEmpty()) {
+                    alert('장바구니가 비어 있습니다.');
+                    return;
+                }
                 const orderType = document.querySelector('input[name="order_type"]').value;
                 if (orderType === 'take_out') {
                     updateCartItemsInput();
@@ -34,20 +37,19 @@
                     document.getElementById('seatSelectionModal').style.display = 'block';
                 }
             });
-
-            // Close modal handling
+        
             closeModal.forEach(button => {
                 button.addEventListener('click', function() {
                     this.closest('.modal').style.display = 'none';
                 });
             });
-
+        
             window.addEventListener('click', function(event) {
                 if (event.target == itemModal) {
                     itemModal.style.display = 'none';
                 }
             });
-
+        
             itemForm.addEventListener('submit', function(event) {
                 event.preventDefault();
                 const formData = new FormData(itemForm);
@@ -58,18 +60,18 @@
                     size: formData.get('size'),
                     quantity: parseInt(formData.get('quantity'))
                 };
-
+        
                 addItemToCart(itemDetails);
                 itemModal.style.display = 'none';
                 itemForm.reset();
             });
-
+        
             menuButtons.forEach(button => {
                 button.addEventListener('click', function(event) {
                     event.preventDefault();
                     menuButtons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
-
+        
                     const category = button.getAttribute('href').replace('#', '');
                     menuItems.forEach(item => {
                         if (item.classList.contains(category)) {
@@ -80,7 +82,7 @@
                     });
                 });
             });
-
+        
             document.querySelectorAll('.stampBtn').forEach(button => {
                 button.addEventListener('click', function() {
                     selectedItem = {
@@ -90,7 +92,7 @@
                     itemModal.style.display = 'block';
                 });
             });
-
+        
             function addItemToCart(item) {
                 const cart = document.querySelector('.cart ul');
                 const cartItem = document.createElement('li');
@@ -108,40 +110,43 @@
                     </div>
                 `;
                 cart.appendChild(cartItem);
-
+        
                 const increaseBtn = cartItem.querySelector('.increaseBtn');
                 const decreaseBtn = cartItem.querySelector('.decreaseBtn');
                 const removeBtn = cartItem.querySelector('.removeBtn');
-
+        
                 updateDecreaseButton(decreaseBtn, item.quantity);
-
+        
                 increaseBtn.addEventListener('click', function() {
                     item.quantity += 1;
                     updateCartItem(cartItem, item);
                 });
-
+        
                 decreaseBtn.addEventListener('click', function() {
                     if (item.quantity > 1) {
                         item.quantity -= 1;
                         updateCartItem(cartItem, item);
                     }
                 });
-
+        
                 removeBtn.addEventListener('click', function() {
                     cartItem.remove();
                     updateTotal();
+                    toggleCheckoutButton();
                 });
-
+        
                 updateTotal();
+                toggleCheckoutButton();
             }
-
+        
             function updateCartItem(cartItem, item) {
                 cartItem.querySelector('.item-quantity').textContent = item.quantity;
                 cartItem.querySelector('.price').textContent = `${item.price * item.quantity}₩`;
                 updateDecreaseButton(cartItem.querySelector('.decreaseBtn'), item.quantity);
                 updateTotal();
+                toggleCheckoutButton();
             }
-
+        
             function updateDecreaseButton(button, quantity) {
                 if (quantity <= 1) {
                     button.disabled = true;
@@ -149,7 +154,7 @@
                     button.disabled = false;
                 }
             }
-
+        
             function updateTotal() {
                 const cartItems = document.querySelectorAll('.cart .cart-item');
                 let total = 0;
@@ -160,7 +165,20 @@
                 document.querySelector('.cart .total .price').textContent = `${total}₩`;
                 document.getElementById('totalPrice').value = total;
             }
-
+        
+            function isCartEmpty() {
+                const cartItems = document.querySelectorAll('.cart .cart-item');
+                return cartItems.length === 0;
+            }
+        
+            function toggleCheckoutButton() {
+                if (isCartEmpty()) {
+                    checkoutButton.disabled = true;
+                } else {
+                    checkoutButton.disabled = false;
+                }
+            }
+        
             function updateCartItemsInput() {
                 const cartItems = document.querySelectorAll('.cart .cart-item');
                 const cartItemsContainer = document.getElementById('cartItemsContainer');
@@ -178,7 +196,6 @@
                         const itemQuantity = parseInt(itemQuantityElement.textContent);
                         const itemPrice = parseInt(itemPriceElement.textContent.replace('₩', ''));
             
-                        // 정규 표현식을 사용하여 항목 정보 추출
                         const nameMatch = h3Content.match(/^(\S+)/);
                         const temperatureMatch = h3Content.match(/\(([^,]+),/);
                         const sizeMatch = h3Content.match(/,\s*([^,]+)\)/);
@@ -197,19 +214,18 @@
                     }
                 });
             }
-            
-
+        
             document.getElementById('selectSeatBtn').addEventListener('click', function() {
                 document.getElementById('seatSelectionModal').style.display = 'none';
                 document.getElementById('seatModal').style.display = 'block';
             });
-
+        
             document.getElementById('skipSeatBtn').addEventListener('click', function() {
                 document.getElementById('seatSelectionModal').style.display = 'none';
                 updateCartItemsInput();
                 requestPay(null);
             });
-
+        
             document.querySelectorAll('.seat-item.available').forEach(function(seatItem) {
                 seatItem.addEventListener('click', function() {
                     document.querySelectorAll('.seat-item').forEach(function(item) {
@@ -218,18 +234,18 @@
                     this.classList.add('selected');
                     selectedSeat = this.getAttribute('data-seat-id');
                 });
-            });            
-
+            });
+        
             document.getElementById('confirmSeatBtn').addEventListener('click', function() {
                 if (selectedSeat) {
                     document.getElementById('seatModal').style.display = 'none';
                     updateCartItemsInput();
                     requestPay(selectedSeat);
                 } else {
-                    alert('Please select a seat.');
+                    alert('좌석을 선택해주세요.');
                 }
             });
-
+        
             function requestPay(seatId) {
                 const total = document.getElementById('totalPrice').value;
                 const makeMerchantUid = Date.now().toString();
@@ -240,21 +256,21 @@
                     itemNames.push(itemName);
                 });
                 const itemNamesString = itemNames.join(', ');
-
+        
                 IMP.request_pay({
                     pg : 'kcp',
                     pay_method : 'card',
                     merchant_uid: "IMP" + makeMerchantUid,
-                    name : `Order: ${itemNamesString}`,
+                    name : `주문명: ${itemNamesString}`,
                     amount : total,
                     buyer_email : 'iamport@chai.finance',
-                    buyer_name : 'IAMPORT Tech Support',
+                    buyer_name : '아임포트 기술지원팀',
                     buyer_tel : '010-1234-5678',
-                    buyer_addr : 'Gangnam-gu, Seoul',
+                    buyer_addr : '서울특별시 강남구 삼성동',
                     buyer_postcode : '123-456'
                 }, function (rsp) { 
                     if (rsp.success) {
-                        alert('Payment completed.');
+                        alert('결제가 완료되었습니다.');
                         if (seatId) {
                             const seatInput = document.createElement('input');
                             seatInput.type = 'hidden';
@@ -262,31 +278,29 @@
                             seatInput.value = seatId;
                             document.getElementById('checkoutForm').appendChild(seatInput);
                         }
-                        // After payment, open the stamp accumulation modal.
                         openStampModal();
                     } else {
-                        alert('Payment failed. ' + rsp.error_msg);
+                        alert('결제에 실패하였습니다. ' + rsp.error_msg);
                     }
                 });
             }
-
-            // Stamp accumulation modal
+        
             function openStampModal() {
                 document.getElementById('orderCompleteModal').style.display = "block";
             }
-
+        
             function closeStampModal() {
                 document.getElementById('orderCompleteModal').style.display = "none";
             }
-
+        
             function appendNumber(number) {
                 document.getElementById('phoneNumber').value += number;
             }
-
+        
             function clearNumber() {
                 document.getElementById('phoneNumber').value = '';
             }
-
+        
             function submitPhoneNumber() {
                 var phoneNumber = document.getElementById('phoneNumber').value;
                 if (phoneNumber) {
@@ -294,33 +308,30 @@
                     xhr.open('POST', '{% url "add_stamp" %}', true);
                     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
                     xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
-
+        
                     xhr.onload = function() {
                         var response = JSON.parse(xhr.responseText);
                         alert(response.message);
                         if (xhr.status === 200) {
                             closeStampModal();
-                            // After the order is completed, submit the checkoutForm.
                             document.getElementById('checkoutForm').submit();
                         } else {
-                            // Display an error message to the user.
                             alert(response.message);
                         }
                     };
-
+        
                     xhr.send('phone_number=' + phoneNumber);
                 } else {
-                    alert('Please enter a phone number.');
+                    alert('전화번호를 입력해주세요.');
                 }
             }
 
-            // Add event listeners.
             document.querySelectorAll('.numpad button').forEach(button => {
                 button.addEventListener('click', function() {
                     const value = this.textContent;
-                    if (value === 'Clear') {
+                    if (value === '지우기') {
                         clearNumber();
-                    } else if (value === 'OK') {
+                    } else if (value === '확인') {
                         submitPhoneNumber();
                     } else {
                         appendNumber(value);
@@ -328,25 +339,26 @@
                 });
             });
 
-            // Close the stamp modal when the user clicks on <span> (x)
             document.querySelectorAll('#orderCompleteModal .close').forEach(function(closeBtn) {
                 closeBtn.addEventListener('click', function() {
                     closeStampModal();
                 });
             });
-
+        
             document.getElementById('skipStampBtn').addEventListener('click', function() {
                 closeStampModal();
                 document.getElementById('checkoutForm').submit();
             });
-
-            // Ensure the modal doesn't close immediately after opening
+        
             setTimeout(function() {
                 if (document.getElementById('orderCompleteModal').style.display === "block") {
                     document.getElementById('orderCompleteModal').style.display = "block";
                 }
             }, 100);
+        
+            toggleCheckoutButton();
         });
+        
     </script>
     <style>
         h1 a {
@@ -540,7 +552,7 @@
 </head>
 <body>
     <header class="header">
-        <button class="back-button"><a href='{% url 'main' %}'>&larr;</a></button>
+        <button class="back-button"><a href='{% url 'en_order_type' %}'>&larr;</a></button>
         <h1>
             <a href='{% url 'main' %}'>CAFE KIOSK</a>
         </h1>   
@@ -607,7 +619,6 @@
         <section class="cart">
             <h2>Cart</h2>
             <ul>
-                <!-- 기존 기본 장바구니 항목을 제거합니다 -->
             </ul>
             <div class="total">
                 <span>Total:</span>
@@ -624,7 +635,6 @@
         </section>
     </main>
 
-    <!-- Seat selection confirmation modal -->
     <div id="seatSelectionModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeSeatSelectionModal">&times;</span>
@@ -634,7 +644,6 @@
         </div>
     </div>
 
-    <!-- Seat selection modal -->
     <div id="seatModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeSeatModal">&times;</span>
@@ -652,7 +661,6 @@
         </div>
     </div>
 
-    <!-- Order details selection modal -->
     <div id="itemModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -682,7 +690,6 @@
         </div>
     </div>
 
-    <!-- Stamp accumulation modal -->
     <div id="orderCompleteModal" class="modal">
         <div class="modal-content">
             <h2>Stamp Accumulation</h2>

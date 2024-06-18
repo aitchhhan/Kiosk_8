@@ -14,23 +14,18 @@ from django import template
 import os, json 
 
 def main(request):
-    # 메인 페이지 출력
     return render(request, 'main.html')
 
 def ko_order_type(request):
-    # 메인 페이지 출력
     return render(request, 'user_pages/ko/ko_order_type.html')
 
 def en_order_type(request):
-    # 메인 페이지 출력
     return render(request, 'user_pages/en/en_order_type.html')
 
 def ja_order_type(request):
-    # 메인 페이지 출력
     return render(request, 'user_pages/ja/ja_order_type.html')
 
 def zh_order_type(request):
-    # 메인 페이지 출력
     return render(request, 'user_pages/zh/zh_order_type.html')
 
 
@@ -41,19 +36,17 @@ def manager_login_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
         if 'manager_id' not in request.session:
             messages.error(request, 'You must be logged in to access this page.')
-            return redirect('manager_login')  # 로그인 페이지로 리디렉션
+            return redirect('manager_login')  
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
 
 @manager_login_required
 def manager(request):
-    # 메인 페이지 출력
     return render(request, 'manager_pages/manager.html')
 
 @manager_login_required
 def menu_manage(request):
-    # 메인 페이지 출력
     return render(request, 'manager_pages/menu_manage.html')
 
 def manager_login(request):
@@ -65,61 +58,52 @@ def manager_login(request):
             manager = Manager.objects.get(admin_id=admin_id)
             if manager.password == password:
                 request.session['manager_id'] = manager.id
-                messages.success(request, 'Successfully logged in')
-                return redirect('manager')  # Replace 'dashboard' with your dashboard view name
+                messages.success(request, '로그인 성공')
+                return redirect('manager')  
             else:
-                messages.error(request, 'Invalid password')
+                messages.error(request, '유효하지 않은 비밀번호')
         except Manager.DoesNotExist:
-            messages.error(request, 'Admin ID does not exist')
+            messages.error(request, '아이디가 존재하지 않음')
     
     return render(request, 'manager_pages/manager_login.html')
 
 def manager_logout(request):
     if 'manager_id' in request.session:
         del request.session['manager_id']
-        messages.success(request, 'Successfully logged out')
-    return redirect('index')
-
-def dashboard(request):
-    if 'manager_id' not in request.session:
-        return redirect('manager_login')
-    
-    # Fetch sales, menu, orders etc.
-    context = {
-        # 'sales': sales_data,
-        # 'menu': menu_data,
-        # 'orders': orders_data,
-    }
-    return render(request, 'dashboard.html', context)
+        messages.success(request, '로그아웃 성공')
+    return redirect('manager')
 
 @manager_login_required
 def add_item(request):
+    error_message = ""
+    
     if request.method == 'POST':
         action = request.POST.get('action')
         
         if action == 'save':
-            # "저장" 버튼이 클릭되었을 때 처리할 로직
-            item_name = request.POST['item_name']
-            item_price = request.POST['item_price']
+            item_name_ko = request.POST.get('item_name_ko')
+            item_name_en = request.POST.get('item_name_en')
+            item_name_ja = request.POST.get('item_name_ja')
+            item_name_zh = request.POST.get('item_name_zh')
+            item_price = request.POST.get('item_price')
             item_image = request.FILES.get('item_image') if 'item_image' in request.FILES else None
-            category = request.POST['category']
+            category = request.POST.get('category')
 
-            # 데이터 유효성 검사 및 저장
-            if item_name and item_price and item_image:
-                item = Item (
-                    item_name = item_name,
-                    item_price = item_price,
-                    item_image = item_image,
-                    category = category,
+            if item_name_ko and item_name_en and item_name_ja and item_name_zh and item_price and item_image and category:
+                item = Item(
+                    item_name_ko=item_name_ko,
+                    item_name_en=item_name_en,
+                    item_name_ja=item_name_ja,
+                    item_name_zh=item_name_zh,
+                    item_price=item_price,
+                    item_image=item_image,
+                    category=category,
                 )
                 item.save()
                 return redirect('menu_list')
             else:
-                # 필요한 모든 데이터가 제출되지 않은 경우에 대한 처리
                 error_message = "모든 필드를 입력해야 합니다."
         
-    else:
-        error_message = ""
     return render(request, 'manager_pages/add_item.html', {'error_message': error_message})
 
 @manager_login_required
@@ -130,27 +114,30 @@ def edit_item(request, item_id):
         action = request.POST.get('action')
         
         if action == 'save':
-            # "저장" 버튼이 클릭되었을 때 처리할 로직
-            item_name = request.POST['item_name']
-            item_price = request.POST['item_price']
-            item_image = request.FILES.get('item_image') if 'item_image' in request.FILES else item.item_image
-            category = request.POST['category']
+            item_name_ko = request.POST.get('item_name_ko')
+            item_name_en = request.POST.get('item_name_en')
+            item_name_ja = request.POST.get('item_name_ja')
+            item_name_zh = request.POST.get('item_name_zh')
+            item_price = request.POST.get('item_price')
+            item_image = request.FILES.get('item_image') if 'item_image' in request.FILES else None
+            category = request.POST.get('category')
 
-            # 데이터 유효성 검사 및 저장
-            if item_name and item_price and category:
-                item.item_name = item_name
+            if item_name_ko and item_name_en and item_name_ja and item_name_zh and item_price and category:
+                item.item_name_ko = item_name_ko
+                item.item_name_en = item_name_en
+                item.item_name_ja = item_name_ja
+                item.item_name_zh = item_name_zh
                 item.item_price = item_price
-                item.item_image = item_image
+                if item_image:
+                    item.item_image = item_image                
                 item.category = category
                 item.save()
                 return redirect('menu_list')
             else:
-                # 필요한 모든 데이터가 제출되지 않은 경우에 대한 처리
                 error_message = "모든 필드를 입력해야 합니다."
                 return render(request, 'manager_pages/edit_item.html', {'item': item, 'error_message': error_message})
         
         elif action == 'delete':
-            # "삭제" 버튼이 클릭되었을 때 처리할 로직
             item.delete()
             return redirect('menu_list')
     
@@ -159,6 +146,7 @@ def edit_item(request, item_id):
 
     return render(request, 'manager_pages/edit_item.html', {'item': item, 'error_message': error_message})
 
+
 @manager_login_required
 def menu_list(request):
     items = Item.objects.all()
@@ -166,7 +154,6 @@ def menu_list(request):
     if request.method == 'POST':
         action = request.POST.get('action')
         
-        # 저장 눌렀을 때
         if action == 'save':
             updated_data = {'item_name': request.POST.get('item_name'),
                             'item_price': request.POST.get('item_price'),}
@@ -174,7 +161,6 @@ def menu_list(request):
             ori_name = request.POST.get('ori_name')
             new_name = request.POST.get('event_name')
             
-            # 스탬프 모델에 데이터 저장/이미지 입력
             images = request.FILES.get('item_image')
             try:
                 if images:
@@ -182,37 +168,18 @@ def menu_list(request):
                     filename = fs.save(images.name, images)
                     updated_data['image'] = filename
                     
-                # DB에 직접 업뎃
                 Item.objects.filter(event_name=ori_name).update(**updated_data)
                 
-                new_item_instance = Item.objects.get(item_name=new_name)  # 새로운 event_name에 해당하는 stamp 인스턴스
-
-                # 2. 연결된 stamp_collection 레코드 찾기 및 외래 키 값 업데이트
-                # related_stamp_collections = stamp_collection.objects.filter(stamp__event_name=ori_name)
-                # related_stamp_collections.update(stamp=new_stamp_instance)
-                
-                return redirect('menu_list')  # 수정 후 도장 목록으로 리디렉션
+                return redirect('menu_list')  
 
             except Item.DoesNotExist:
                     return render(request, 'manager_pages/menu_list.html', {'error_message': '필드를 확인해주세요.'})
-
-        # 삭제 눌렀을 때
-        if action == 'delete':
-            ori_stamp = request.POST.get('ori_name')  # 삭제할 스탬프의 ID를 받아옴
-            
-            try:
-                delstamp = Item.objects.get(event_name=ori_stamp)  # 해당 ID의 스탬프 객체를 가져옴
-                delstamp.delete()  # 스탬프 삭제
-                
-                return redirect('menu_list')  # 삭제 후 리다이렉트
-            except Item.DoesNotExist:
-                return render(request, 'manager_pages/menu_list.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
     return render(request, 'manager_pages/menu_list.html', {'items': items})
 
 @manager_login_required
 def order_list(request):
-    orders = Order.objects.filter(is_completed=False)  # 미완료 주문만 조회
+    orders = Order.objects.filter(is_completed=False)  
     return render(request, 'manager_pages/order_list.html', {'orders': orders})
 
 @manager_login_required
@@ -335,15 +302,36 @@ def toggle_seat(request):
             return JsonResponse({'success': False, 'message': 'Seat does not exist'})
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
+@csrf_exempt
+def cancel_order(request):
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        try:
+            order = Order.objects.get(order_number=order_id)
+            order.delete()
+            return JsonResponse({'status': 'success'})
+        except Order.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': '주문이 존재하지 않습니다.'}, status=400)
+    return JsonResponse({'status': 'error', 'message': '잘못된 요청입니다.'}, status=400)
+
+@csrf_exempt
+def complete_order(request):
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        try:
+            order = Order.objects.get(order_number=order_id)
+            order.is_completed = True
+            order.save()
+            return JsonResponse({'status': 'success'})
+        except Order.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': '주문이 존재하지 않습니다.'}, status=400)
+    return JsonResponse({'status': 'error', 'message': '잘못된 요청입니다.'}, status=400)
+
 # User_Pages #################################################################################################################
-# 쿠키 4.3 7.6 코드
-# npm개념
-# 시뮬라이즈
-# cpu 계산
 
 def ko_menu(request):
     items = Item.objects.all()
-    seats = Seat.objects.all()  # 좌석 정보를 가져옵니다.
+    seats = Seat.objects.all()  
     order_type = request.GET.get('order_type', 'eat_in')
     
     if request.method == 'POST':
@@ -371,23 +359,12 @@ def ko_menu(request):
 
             except Item.DoesNotExist:
                 return render(request, 'user_pages/ko/ko_menu.html', {'error_message': '필드를 확인해주세요.'})
-
-        if action == 'delete':
-            ori_stamp = request.POST.get('ori_name')
-            
-            try:
-                delstamp = Item.objects.get(event_name=ori_stamp)
-                delstamp.delete()
-                
-                return redirect('ko_menu')
-            except Item.DoesNotExist:
-                return render(request, 'user_pages/ko/ko_menu.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
     return render(request, 'user_pages/ko/ko_menu.html', {'items': items, 'seats': seats, 'order_type': order_type})
 
 def en_menu(request):
     items = Item.objects.all()
-    seats = Seat.objects.all()  # 좌석 정보를 가져옵니다.
+    seats = Seat.objects.all()  
     order_type = request.GET.get('order_type', 'eat_in')
     
     if request.method == 'POST':
@@ -415,23 +392,12 @@ def en_menu(request):
 
             except Item.DoesNotExist:
                 return render(request, 'user_pages/en/en_menu.html', {'error_message': '필드를 확인해주세요.'})
-
-        if action == 'delete':
-            ori_stamp = request.POST.get('ori_name')
-            
-            try:
-                delstamp = Item.objects.get(event_name=ori_stamp)
-                delstamp.delete()
-                
-                return redirect('en_menu')
-            except Item.DoesNotExist:
-                return render(request, 'user_pages/en/en_menu.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
     return render(request, 'user_pages/en/en_menu.html', {'items': items, 'seats': seats, 'order_type': order_type})
 
 def ja_menu(request):
     items = Item.objects.all()
-    seats = Seat.objects.all()  # 좌석 정보를 가져옵니다.
+    seats = Seat.objects.all()  
     order_type = request.GET.get('order_type', 'eat_in')
     
     if request.method == 'POST':
@@ -459,23 +425,12 @@ def ja_menu(request):
 
             except Item.DoesNotExist:
                 return render(request, 'user_pages/ja/ja_menu.html', {'error_message': '필드를 확인해주세요.'})
-
-        if action == 'delete':
-            ori_stamp = request.POST.get('ori_name')
-            
-            try:
-                delstamp = Item.objects.get(event_name=ori_stamp)
-                delstamp.delete()
-                
-                return redirect('ja_menu')
-            except Item.DoesNotExist:
-                return render(request, 'user_pages/ja/ja_menu.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
     return render(request, 'user_pages/ja/ja_menu.html', {'items': items, 'seats': seats, 'order_type': order_type})
 
 def zh_menu(request):
     items = Item.objects.all()
-    seats = Seat.objects.all()  # 좌석 정보를 가져옵니다.
+    seats = Seat.objects.all()  
     order_type = request.GET.get('order_type', 'eat_in')
     
     if request.method == 'POST':
@@ -503,17 +458,6 @@ def zh_menu(request):
 
             except Item.DoesNotExist:
                 return render(request, 'user_pages/zh/zh_menu.html', {'error_message': '필드를 확인해주세요.'})
-
-        if action == 'delete':
-            ori_stamp = request.POST.get('ori_name')
-            
-            try:
-                delstamp = Item.objects.get(event_name=ori_stamp)
-                delstamp.delete()
-                
-                return redirect('zh_menu')
-            except Item.DoesNotExist:
-                return render(request, 'user_pages/zh/zh_menu.html', {'error_message': '이벤트가 존재하지 않습니다.'})
     
     return render(request, 'user_pages/zh/zh_menu.html', {'items': items, 'seats': seats, 'order_type': order_type})
 
@@ -523,13 +467,13 @@ def ko_checkout(request):
         total_price = request.POST.get('total_price')
         order_type = request.POST.get('order_type', 'eat_in')
         payment_type = request.POST.get('payment_type')
-        seat_id = request.POST.get('seat_id')  # 추가된 좌석 정보
+        seat_id = request.POST.get('seat_id')  
 
         if cart_items:
             new_order = Order(total_price=total_price, is_completed=False, order_type=order_type, payment_type=payment_type)
             if seat_id:
                 seat = Seat.objects.get(seat_id=seat_id)
-                new_order.seat = seat  # 주문에 좌석 정보 추가
+                new_order.seat = seat  
                 seat.is_available = False
                 seat.save()
             new_order.save()
@@ -565,13 +509,13 @@ def ja_checkout(request):
         total_price = request.POST.get('total_price')
         order_type = request.POST.get('order_type', 'eat_in')
         payment_type = request.POST.get('payment_type')
-        seat_id = request.POST.get('seat_id')  # 추가된 좌석 정보
+        seat_id = request.POST.get('seat_id')  
 
         if cart_items:
             new_order = Order(total_price=total_price, is_completed=False, order_type=order_type, payment_type=payment_type)
             if seat_id:
                 seat = Seat.objects.get(seat_id=seat_id)
-                new_order.seat = seat  # 주문에 좌석 정보 추가
+                new_order.seat = seat  
                 seat.is_available = False
                 seat.save()
             new_order.save()
@@ -607,13 +551,13 @@ def en_checkout(request):
         total_price = request.POST.get('total_price')
         order_type = request.POST.get('order_type', 'eat_in')
         payment_type = request.POST.get('payment_type')
-        seat_id = request.POST.get('seat_id')  # 추가된 좌석 정보
+        seat_id = request.POST.get('seat_id')  
 
         if cart_items:
             new_order = Order(total_price=total_price, is_completed=False, order_type=order_type, payment_type=payment_type)
             if seat_id:
                 seat = Seat.objects.get(seat_id=seat_id)
-                new_order.seat = seat  # 주문에 좌석 정보 추가
+                new_order.seat = seat  
                 seat.is_available = False
                 seat.save()
             new_order.save()
@@ -649,13 +593,13 @@ def zh_checkout(request):
         total_price = request.POST.get('total_price')
         order_type = request.POST.get('order_type', 'eat_in')
         payment_type = request.POST.get('payment_type')
-        seat_id = request.POST.get('seat_id')  # 추가된 좌석 정보
+        seat_id = request.POST.get('seat_id')  
 
         if cart_items:
             new_order = Order(total_price=total_price, is_completed=False, order_type=order_type, payment_type=payment_type)
             if seat_id:
                 seat = Seat.objects.get(seat_id=seat_id)
-                new_order.seat = seat  # 주문에 좌석 정보 추가
+                new_order.seat = seat  
                 seat.is_available = False
                 seat.save()
             new_order.save()
@@ -734,44 +678,6 @@ def payment_complete(request):
         else:
             return JsonResponse({'message': '결제 실패.'}, status=400)
     return JsonResponse({'message': '잘못된 요청입니다.'}, status=400)
-
-
-
-@csrf_exempt
-def cancel_order(request):
-    if request.method == 'POST':
-        order_id = request.POST.get('order_id')
-        try:
-            order = Order.objects.get(order_number=order_id)
-            order.delete()
-            return JsonResponse({'status': 'success'})
-        except Order.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': '주문이 존재하지 않습니다.'}, status=400)
-    return JsonResponse({'status': 'error', 'message': '잘못된 요청입니다.'}, status=400)
-
-@csrf_exempt
-def complete_order(request):
-    if request.method == 'POST':
-        order_id = request.POST.get('order_id')
-        try:
-            order = Order.objects.get(order_number=order_id)
-            order.is_completed = True
-            order.save()
-            return JsonResponse({'status': 'success'})
-        except Order.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': '주문이 존재하지 않습니다.'}, status=400)
-    return JsonResponse({'status': 'error', 'message': '잘못된 요청입니다.'}, status=400)
-
-def seat(request):
-    seats = Seat.objects.all()
-    return render(request, 'user_pages/seat.html', {'seats': seats})
-
-def book_seat(request, seat_id):
-    seat = get_object_or_404(Seat, seat_id=seat_id)
-    if seat.is_available:
-        seat.is_available = False
-        seat.save()
-    return redirect('seat')
 
 @csrf_exempt
 def add_stamp(request):

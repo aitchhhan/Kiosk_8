@@ -15,11 +15,9 @@
             menuButtons.forEach(button => {
                 button.addEventListener('click', function(event) {
                     event.preventDefault();
-                    
-                    // Remove 'active' class from all buttons
+
                     menuButtons.forEach(btn => btn.classList.remove('active'));
-                    
-                    // Add 'active' class to clicked button
+
                     button.classList.add('active');
                     
                     const category = button.getAttribute('href').replace('#', '');
@@ -33,7 +31,6 @@
                 });
             });
 
-            // 기본으로 coffee 항목 보이기
             menuItems.forEach(item => {
                 if (item.classList.contains('coffee')) {
                     item.style.display = 'block';
@@ -42,10 +39,8 @@
                 }
             });
 
-            // 기본으로 coffee 버튼에 active 클래스 추가
             document.querySelector('.menu-categories li a[href="#coffee"]').classList.add('active');
 
-            // Item buttons click event
             itemButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const itemId = button.getAttribute('data-id');
@@ -178,10 +173,8 @@
 </head>
 <body>
     <header class="header">
-        <button class="back-button"><a href='{% url "index" %}'>&larr;</a></button>
-        <h1>
-            <a href="{% url "index" %}">메뉴 수정 페이지</a>
-        </h1>
+        <button class="back-button"><a href='{% url "manager" %}'>&larr;</a></button>
+        <h1>메뉴 수정 페이지</h1>
         <button class="add-menu-button" onclick="location.href='{% url 'add_item' %}'">메뉴 추가</button>
     </header>
     <main>
@@ -200,9 +193,12 @@
             <div class="category coffee">
                 {% for item in items %}
                     {% if item.category == 'coffee' %}
-                        <button class="stampBtn" data-id="{{ item.id }}" data-name="{{ item.item_name }}" data-price="{{ item.item_price }}">
+                        <button class="stampBtn" data-id="{{ item.id }}" data-name="{{ item.item_name_ko }}" data-price="{{ item.item_price }}">
                             <img src="{{ item.item_image.url }}" alt="수집 이미지" width="100" height="100">
-                            <div>{{ item.item_name }}</div>
+                            <div>{{ item.item_name_ko }}</div>
+                            <div>{{ item.item_name_en }}</div>
+                            <div>{{ item.item_name_ja }}</div>
+                            <div>{{ item.item_name_zh }}</div>
                             <div>{{ item.item_price }}원</div>
                         </button>
                     {% endif %}
@@ -211,9 +207,12 @@
             <div class="category decaffein" style="display:none;">
                 {% for item in items %}
                     {% if item.category == 'decaffein' %}
-                        <button class="stampBtn" data-id="{{ item.id }}" data-name="{{ item.item_name }}" data-price="{{ item.item_price }}">
+                        <button class="stampBtn" data-id="{{ item.id }}" data-name="{{ item.item_name_ko }}" data-price="{{ item.item_price }}">
                             <img src="{{ item.item_image.url }}" alt="수집 이미지" width="100" height="100">
-                            <div>{{ item.item_name }}</div>
+                            <div>{{ item.item_name_ko }}</div>
+                            <div>{{ item.item_name_en }}</div>
+                            <div>{{ item.item_name_ja }}</div>
+                            <div>{{ item.item_name_zh }}</div>
                             <div>{{ item.item_price }}원</div>
                         </button>
                     {% endif %}
@@ -222,9 +221,12 @@
             <div class="category tea_ade" style="display:none;">
                 {% for item in items %}
                     {% if item.category == 'tea_ade' %}
-                        <button class="stampBtn" data-id="{{ item.id }}" data-name="{{ item.item_name }}" data-price="{{ item.item_price }}">
+                        <button class="stampBtn" data-id="{{ item.id }}" data-name="{{ item.item_name_ko }}" data-price="{{ item.item_price }}">
                             <img src="{{ item.item_image.url }}" alt="수집 이미지" width="100" height="100">
-                            <div>{{ item.item_name }}</div>
+                            <div>{{ item.item_name_ko }}</div>
+                            <div>{{ item.item_name_en }}</div>
+                            <div>{{ item.item_name_ja }}</div>
+                            <div>{{ item.item_name_zh }}</div>
                             <div>{{ item.item_price }}원</div>
                         </button>
                     {% endif %}
@@ -233,9 +235,12 @@
             <div class="category dessert" style="display:none;">
                 {% for item in items %}
                     {% if item.category == 'dessert' %}
-                        <button class="stampBtn" data-id="{{ item.id }}" data-name="{{ item.item_name }}" data-price="{{ item.item_price }}">
+                        <button class="stampBtn" data-id="{{ item.id }}" data-name="{{ item.item_name_ko }}" data-price="{{ item.item_price }}">
                             <img src="{{ item.item_image.url }}" alt="수집 이미지" width="100" height="100">
-                            <div>{{ item.item_name }}</div>
+                            <div>{{ item.item_name_ko }}</div>
+                            <div>{{ item.item_name_en }}</div>
+                            <div>{{ item.item_name_ja }}</div>
+                            <div>{{ item.item_name_zh }}</div>
                             <div>{{ item.item_price }}원</div>
                         </button>
                     {% endif %}

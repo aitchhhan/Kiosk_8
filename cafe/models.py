@@ -23,15 +23,12 @@ class Manager(models.Model):
         return check_password(raw_password, self.password)
 
     def manage_menu(self):
-        # 메뉴 관리 기능 구현
         pass
 
     def manage_order(self):
-        # 주문 관리 기능 구현
         pass
 
     def check_sales(self):
-        # 판매 현황 확인 기능 구현
         pass
 
 class Item(models.Model):
@@ -42,9 +39,9 @@ class Item(models.Model):
         ('dessert', 'Dessert'),
     ]
     item_name_ko = models.CharField(max_length=255, default='')
-    item_name_ja = models.CharField(max_length=255, default='')
     item_name_en = models.CharField(max_length=255, default='')
-    item_name_jz = models.CharField(max_length=255, default='')
+    item_name_ja = models.CharField(max_length=255, default='')
+    item_name_zh = models.CharField(max_length=255, default='')
     item_price = models.IntegerField()
     item_image = models.ImageField(upload_to='images/')
     category = models.CharField(max_length=10, choices=CATEGORY, default='coffee')
@@ -74,9 +71,9 @@ class Order(models.Model):
     total_price = models.IntegerField()
     is_completed = models.BooleanField(default=False)
     order_type = models.CharField(max_length=10, choices=ORDER_TYPE_CHOICES, default='eat_in')
-    payment_type = models.CharField(max_length=10, choices=PAYMENT_TYPE_CHOICES, default='cash')  # 새로운 필드 추가
-    created_at = models.DateTimeField(default=timezone.now)  # 주문 생성 시간 필드 추가
-    seat = models.ForeignKey(Seat, null=True, blank=True, on_delete=models.SET_NULL)  # 좌석 필드 추가
+    payment_type = models.CharField(max_length=10, choices=PAYMENT_TYPE_CHOICES, default='cash')  
+    created_at = models.DateTimeField(default=timezone.now)  
+    seat = models.ForeignKey(Seat, null=True, blank=True, on_delete=models.SET_NULL)  
 
     def save(self, *args, **kwargs):
         if not self.order_number:
@@ -111,5 +108,4 @@ class OrderItem(models.Model):
         self.save()
         
     def view_details(self):
-        # 주문 상세 보기 기능 구현
         pass

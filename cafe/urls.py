@@ -13,7 +13,7 @@ urlpatterns = [
     path('manager/manager_logout/', manager_logout, name='manager_logout'),
     path('manager/add_item/', add_item, name='add_item'),
     path('manager/edit_item/<int:item_id>', edit_item, name='edit_item'),
-    path('manager/sales/', sales, name='sales'),  # 매출 확인 페이지 URL 패턴 추가
+    path('manager/sales/', sales, name='sales'), 
     path('manager/manage_seats/', manage_seats, name='manage_seats'),
     path('manager/add_seat/', add_seat, name='add_seat'),
     path('manager/edit_seat/<int:seat_id>/', edit_seat, name='edit_seat'),
@@ -39,8 +39,6 @@ urlpatterns = [
     path('complete_order/', complete_order, name='complete_order'),
     path('payment/', payment, name='payment'),
     path('payment/complete/', payment_complete, name='payment_complete'),
-    path('seat/', seat, name='seat'),
-    path('book/<str:seat_id>/', book_seat, name='book_seat'),
     path('add_stamp/', add_stamp, name='add_stamp'),
 
 ]

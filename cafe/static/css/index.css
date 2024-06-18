@@ -55,22 +55,22 @@ main {
   background-color: #007BFF;
   color: white;
   border: none;
-  padding: 2px 5px;  /* 버튼 크기 줄임 */
+  padding: 2px 5px;  
   border-radius: 5px;
   cursor: pointer;
-  font-size: 12px;  /* 버튼 글자 크기 줄임 */
+  font-size: 12px; 
   display: inline-block;
-  width: 80px; /* 버튼 너비 설정 */
-  height: 30px; /* 버튼 높이 설정 */
+  width: 80px; 
+  height: 30px; 
 }
 
 #adminLoginBtn a {
   color: white;
   text-decoration: none;
-  font-size: 12px;  /* 링크 글자 크기 줄임 */
+  font-size: 12px;  
   display: inline-block;
   width: 50%;
   height: 50%;
   text-align: center;
-  line-height: 30px; /* 버튼 높이에 맞게 설정 */
+  line-height: 30px; 
 }
